@@ -43,11 +43,12 @@ struct ip_hdr {
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	unsigned char	ip_ihl:4,
-			ip_v:4;
+								ip_v:4;
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-	unsigned char	ip_ihl:4,
-			ip_v:4;
-#endif	
+	unsigned char	ip_v:4,
+								ip_ihl:4;
+
+#endif
 	unsigned char	ip_tos;		// Type of service
 	unsigned short	ip_len;		// Datagram Length
 	unsigned short	ip_id;		// Datagram identifier
@@ -61,7 +62,17 @@ struct ip_hdr {
 /* */
 // Read RFC 826 to define the ARP struct
 struct arp_hdr{
-};      
+	unsigned short hw_type;
+	unsigned short proto_type;
+	unsigned char hw_addr_len;
+	unsigned char proto_addr_len;
+	unsigned short opcode;
+	unsigned int sender_ip_addr;
+	unsigned char sender_hw_addr[6];
+	unsigned int sender_proto_addr;
+	unsigned char target_hw_addr;
+	unsigned int target_proto_addr;
+};
 /* */
 //
 //
@@ -84,7 +95,7 @@ int bind_iface_name(int fd, char *iface_name)
 void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 {
 	struct ifreq s;
-	
+
 	strcpy(s.ifr_name, ifname);
 	if (0 == ioctl(sockfd, SIOCGIFHWADDR, &s)) {
 		memcpy(ifn->mac_addr, s.ifr_addr.sa_data, ETH_ADDR_LEN);
@@ -108,7 +119,7 @@ void doProcess(unsigned char* packet, int len) {
 		return;
 
 	struct ether_hdr* eth = (struct ether_hdr*) packet;
-	
+
 	if(htons(0x0806) == eth->ether_type) {
 		// ARP
 		//...
@@ -123,14 +134,14 @@ void read_iface(struct iface *ifn)
 	struct sockaddr	saddr;
 	unsigned char	*packet_buffer;
 	int		n;
-	
-	saddr_len = sizeof(saddr);	
+
+	saddr_len = sizeof(saddr);
 	packet_buffer = malloc(MAX_PACKET_SIZE);
 	if (!packet_buffer) {
-		printf("\nCould not allocate a packet buffer\n");		
+		printf("\nCould not allocate a packet buffer\n");
 		exit(1);
 	}
-	
+
 	while(1) {
 		n = recvfrom(ifn->sockfd, packet_buffer, MAX_PACKET_SIZE, 0, &saddr, &saddr_len);
 		if(n < 0) {
@@ -144,17 +155,17 @@ void read_iface(struct iface *ifn)
 // main function
 int main(int argc, char** argv) {
 	int		i, sockfd;
-	
+
 	if (argc < 2)
 		print_usage();
 
 	for (i = 1; i < argc; i++) {
-		sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));  
+		sockfd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 		if(sockfd < 0) {
 			fprintf(stderr, "ERROR: %s\n", strerror(errno));
 			exit(1);
 		}
-		
+
 		if (bind_iface_name(sockfd, argv[i]) < 0) {
 			perror("Server-setsockopt() error for SO_BINDTODEVICE");
 			printf("%s\n", strerror(errno));
