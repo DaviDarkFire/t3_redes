@@ -6,9 +6,9 @@
 #include <string.h>
 
 typedef struct node{
-  int ip_address;
+  unsigned int ip_address;
   unsigned char eth_address[6];
-  int ttl;
+  unsigned int ttl;
   struct node* next;
 } node_t;
 
@@ -59,12 +59,16 @@ int delete_node_by_ip_address(node_t** head, int del_ip_addr){
 
 void print_list(node_t * head){
   node_t * current = head;
+  struct in_addr ip_addr;
   int i;
   printf("Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
+
   for(i = 0; current != NULL; i++){
     // TODO: printar direito os endereços
-    printf("%d\t\t%d\t\t\t%02X:%02X:%02X:%02X:%02X:%02X\t\t%d\n",
-    i, current->ip_address, current->eth_address[0], current->eth_address[1],
+    ip_addr.s_addr = (uint32_t) ntohl(current->ip_address);
+
+    printf("%d\t\t%s\t\t%02X:%02X:%02X:%02X:%02X:%02X\t\t%d\n",
+    i, inet_ntoa(ip_addr), current->eth_address[0], current->eth_address[1],
     current->eth_address[2], current->eth_address[3], current->eth_address[4],
     current->eth_address[5], current->ttl);
     current = current->next;
@@ -107,13 +111,14 @@ int main(int argc, char** argv){
     // c_eth_addr[0], c_eth_addr[1],
     // c_eth_addr[2], c_eth_addr[3],
     // c_eth_addr[4], c_eth_addr[5]); // DEBUG
+    unsigned int sample_ip = 2982344134;
 
-    node_t* first_node = add_node(NULL, 0, c_eth_addr, 0);
+    node_t* first_node = add_node(NULL, sample_ip, c_eth_addr, 0);
     node_t* aux = first_node;
     node_t* node;
 
     for (int i = 1; i < 10; i++){
-        node = add_node(first_node, i, c_eth_addr, i);
+        node = add_node(first_node, sample_ip, c_eth_addr, i);
         first_node = node;
     }
     node_t* find_ip_5 = find_node_by_ip_address(aux, 12);
