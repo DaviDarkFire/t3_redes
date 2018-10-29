@@ -85,6 +85,29 @@ void print_eth_address(char *s, unsigned char *eth_addr)
 	       eth_addr[0], eth_addr[1], eth_addr[2],
 	       eth_addr[3], eth_addr[4], eth_addr[5]);
 }
+
+void print_iface_info(unsigned int iface_index){
+	struct sockaddr_in sa;
+	sa.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].ip_addr;
+
+	printf("sockfd: %d\n",my_ifaces[iface_index].sockfd);
+	printf("ttl: %d\n", my_ifaces[iface_index].ttl);
+	printf("mtu: %d\n", my_ifaces[iface_index].mtu);
+	printf("ifname: %s\n", my_ifaces[iface_index].ifname);
+	printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n",
+	my_ifaces[iface_index].mac_addr[0],
+ 	my_ifaces[iface_index].mac_addr[1],
+	my_ifaces[iface_index].mac_addr[2],
+	my_ifaces[iface_index].mac_addr[3],
+	my_ifaces[iface_index].mac_addr[4],
+	my_ifaces[iface_index].mac_addr[5]);
+	printf("IP: %s\n", inet_ntoa(sa.sin_addr));
+	printf("RX packets: %d\n", my_ifaces[iface_index].rx_pkts);
+	printf("RX bytes: %d\n", my_ifaces[iface_index].rx_bytes);
+	printf("TX packets: %d\n", my_ifaces[iface_index].tx_pkts);
+	printf("TX bytes: %d\n", my_ifaces[iface_index].tx_bytes);
+
+}
 /* */
 // Bind a socket to an interface
 int bind_iface_name(int fd, char *iface_name)
@@ -120,9 +143,8 @@ void doProcess(unsigned char* packet, int len) {
 
 	struct ether_hdr* eth = (struct ether_hdr*) packet;
 
-	if(htons(0x0806) == eth->ether_type) {
-		// ARP
-		//...
+	if(htons(0x0806) == eth->ether_type) { // ARP
+
 	}
 	// Ignore if it is not an ARP packet
 }
@@ -175,11 +197,21 @@ int main(int argc, char** argv) {
 		get_iface_info(sockfd, argv[i], &my_ifaces[i-1]);
 	}
 
+	pthread_t tid[argc-1];
 	for (i = 0; i < argc-1; i++) {
 		print_eth_address(my_ifaces[i].ifname, my_ifaces[i].mac_addr);
 		printf("\n");
+		pthread_create(&(tid[i]), NULL, &read_iface, my_ifaces[i]);
+		print_iface_info(i);
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
+
+	for(i = 0; i < argc-1; i++){
+		pthread_join(tid[i], NULL);
+	}
+
+	//TODO: colocar aqui a execução da thread principal que fica escutando request dos programas auxiliares
+
 	return 0;
 }
 /* */
