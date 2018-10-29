@@ -1,16 +1,4 @@
-#include <stdio.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef struct node{
-  unsigned int ip_address;
-  unsigned char eth_address[6];
-  unsigned int ttl;
-  struct node* next;
-} node_t;
+#include "linked_list.h"
 
 node_t* add_node(node_t* current_last_node, int ip_address, unsigned char eth_address[6], int ttl){
     node_t* new_node;
@@ -57,7 +45,7 @@ int delete_node_by_ip_address(node_t** head, int del_ip_addr){
   return retval;
 }
 
-void print_list(node_t * head){
+void print_list(node_t * head, char* buffer){
   node_t * current = head;
   struct in_addr ip_addr;
   int i;
@@ -73,6 +61,13 @@ void print_list(node_t * head){
     current->eth_address[5], current->ttl);
     current = current->next;
   }
+}
+
+int list_size(node_t * head){
+    node_t * current = head;
+    int i = 0;
+    for(i = 0; current != NULL; i++){current = current->next;}
+    return  i*(sizeof(node_t)-sizeof(node_t*));
 }
 
 // modifies dest_array with 6 separate bytes on each array element given a string with format XX:XX:XX:XX:XX:XX
@@ -130,6 +125,6 @@ int main(int argc, char** argv){
 
 
     // delete_node_by_ip_address(&aux,0); // DEBUG
-    print_list(aux);
+    // print_list(aux);
 
 }
