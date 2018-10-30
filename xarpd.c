@@ -11,6 +11,7 @@
 #include <net/ethernet.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
+#include <pthread.h>
 /* */
 /* */
 #define MAX_PACKET_SIZE 65536
@@ -150,8 +151,10 @@ void doProcess(unsigned char* packet, int len) {
 }
 /* */
 // This function should be one thread for each interface.
-void read_iface(struct iface *ifn)
+void* read_iface(void *arg)
 {
+	struct iface *ifn = *((struct iface**) arg);
+
 	socklen_t	saddr_len;
 	struct sockaddr	saddr;
 	unsigned char	*packet_buffer;
@@ -171,6 +174,7 @@ void read_iface(struct iface *ifn)
 			exit(1);
 		}
 		doProcess(packet_buffer, n);
+		free(arg);
 	}
 }
 /* */
@@ -199,9 +203,12 @@ int main(int argc, char** argv) {
 
 	pthread_t tid[argc-1];
 	for (i = 0; i < argc-1; i++) {
+		struct iface *arg = malloc(sizeof(*arg));
 		print_eth_address(my_ifaces[i].ifname, my_ifaces[i].mac_addr);
 		printf("\n");
-		pthread_create(&(tid[i]), NULL, &read_iface, my_ifaces[i]);
+		*arg = my_ifaces[i];
+
+		pthread_create(&(tid[i]), NULL, read_iface, arg);
 		print_iface_info(i);
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
