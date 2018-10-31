@@ -76,7 +76,7 @@ void doProcess(unsigned char* packet, int len) {
 // This function should be one thread for each interface.
 void* read_iface(void *arg)
 {
-	struct iface *ifn = *((struct iface**) arg);
+	struct iface *ifn = (struct iface*) arg;
 
 	socklen_t	saddr_len;
 	struct sockaddr	saddr;
@@ -96,8 +96,10 @@ void* read_iface(void *arg)
 			fprintf(stderr, "ERROR: %s\n", strerror(errno));
 			exit(1);
 		}
+		ifn->rx_pkts++;
+		ifn->rx_bytes += n;
 		doProcess(packet_buffer, n);
-		free(arg);
+		// free(arg);
 	}
 }
 
@@ -130,11 +132,10 @@ void arp_handle_request(char* received_buffer, node_t* list_head, int connfd){
 	}
 }
 
-
 /* */
 // main function
 int main(int argc, char** argv) {
-	int		i, sockfd;
+	int	i, sockfd;
 
 	if (argc < 2)
 		print_usage();
@@ -160,9 +161,11 @@ int main(int argc, char** argv) {
 		struct iface *arg = malloc(sizeof(*arg));
 		print_eth_address(my_ifaces[i].ifname, my_ifaces[i].mac_addr);
 		printf("\n");
-		*arg = my_ifaces[i];
 
-		pthread_create(&(tid[i]), NULL, read_iface, arg);
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+		int success = pthread_create(&(tid[i]), &attr, read_iface, &my_ifaces[i]);
+		printf("pthread_create returns: %d\n", success);
 		print_iface_info(i);
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
