@@ -108,8 +108,7 @@ void arp_handle_request(char* received_buffer, node_t* list_head, int connfd){
 
 	switch(type){
 		case (SHOW):{
-			char* buffer;
-			buffer = print_list(list_head);
+			char* buffer = print_list(list_head);
 			arp_send_response(connfd, buffer);
 			break;
 		}
