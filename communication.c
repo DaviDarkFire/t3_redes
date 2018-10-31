@@ -59,14 +59,13 @@ char* arp_get_request(int connfd){
 }
 
 int arp_send_response(int connfd, char* buffer){
-
-
-
-
-
+	n = strlen(buffer);
+	m = send(connfd, buffer,n, 0);
+	while(m < n) {
+		m += send(connfd, buffer + m, n - m, 0);
+	}
 	return 0;
 }
-
 
 int client_create_socket(){
 	int sockfd;

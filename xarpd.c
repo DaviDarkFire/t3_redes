@@ -101,13 +101,17 @@ void* read_iface(void *arg)
 	}
 }
 
-char* arp_handle_request(char* buffer, node_t* list){
-	char type = buffer[0];
+void arp_handle_request(char* received_buffer, node_t* list_head, int connfd){
+	char type = received_buffer[0];
 
 	switch(type){
 		case SHOW:
+			char* buffer = print_list(list_head)
+			arp_send_response(connfd, buffer);
 			break;
 		case RES:
+
+			//arp_send_response(connfd, buffer);
 			break;
 		case ADD:
 			break;
@@ -116,11 +120,12 @@ char* arp_handle_request(char* buffer, node_t* list){
 		case TTL:
 			break;
 		case ETHERNET_INFO:
+
+			//arp_send_response(connfd, buffer);
 			break;
 		default:
 			//TODO: colocar informação de erro
 			break;
-
 
 	}
 }

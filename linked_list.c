@@ -45,22 +45,26 @@ int delete_node_by_ip_address(node_t** head, int del_ip_addr){
   return retval;
 }
 
-void print_list(node_t * head, char* buffer){
+char* print_list(node_t * head){
   node_t * current = head;
   struct in_addr ip_addr;
   int i;
-  printf("Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
+  // printf("Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
+
+  int list_size = list_size(head); //função que retorna o tamanho da lista em bytes
+  char* buffer = malloc(sizeof(char)*list_size);//aloco um buffer do tamanho necessário pra enviar a lista inteira
 
   for(i = 0; current != NULL; i++){
     // TODO: printar direito os endereços
     ip_addr.s_addr = (uint32_t) ntohl(current->ip_address);
 
-    printf("%d\t\t%s\t\t%02X:%02X:%02X:%02X:%02X:%02X\t\t%d\n",
+    sprintf(buffer, "%d\t\t%s\t\t%02X:%02X:%02X:%02X:%02X:%02X\t\t%d\n",
     i, inet_ntoa(ip_addr), current->eth_address[0], current->eth_address[1],
     current->eth_address[2], current->eth_address[3], current->eth_address[4],
     current->eth_address[5], current->ttl);
     current = current->next;
   }
+  return buffer;
 }
 
 int list_size(node_t * head){
