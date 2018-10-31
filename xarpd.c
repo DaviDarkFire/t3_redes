@@ -12,6 +12,7 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <pthread.h>
+#include "xarpd.h"
 /* */
 /* */
 #define MAX_PACKET_SIZE 65536
@@ -177,6 +178,32 @@ void* read_iface(void *arg)
 		free(arg);
 	}
 }
+
+char* arp_handle_request(char* buffer, node_t* list){
+	char type = buffer[0];
+
+	switch(type){
+		case SHOW:
+			break;
+		case RES:
+			break;
+		case ADD:
+			break;
+		case DEL:
+			break;
+		case TTL:
+			break;
+		case ETHERNET_INFO:
+			break;
+		default:
+			//TODO: colocar informação de erro
+			break;
+
+
+	}
+}
+
+
 /* */
 // main function
 int main(int argc, char** argv) {
