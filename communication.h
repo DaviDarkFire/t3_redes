@@ -25,7 +25,10 @@
 
 	int arp_socket_creation();
 	int arp_get_connection(int socket);
+	char* arp_get_request(int connfd);
+	int arp_send_response(int connfd, char* buffer);
 	int client_create_socket();
 	void client_send_request(int socket, char* buffer);
 	char* client_get_response(int connfd);
+	int arp_send_response(int connfd, char* buffer);
 #endif

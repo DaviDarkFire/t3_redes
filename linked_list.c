@@ -51,8 +51,8 @@ char* print_list(node_t * head){
   int i;
   // printf("Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
 
-  int list_size = list_size(head); //função que retorna o tamanho da lista em bytes
-  char* buffer = malloc(sizeof(char)*list_size);//aloco um buffer do tamanho necessário pra enviar a lista inteira
+  int l_size = list_size(head); //função que retorna o tamanho da lista em bytes
+  char* buffer = malloc(sizeof(char)*l_size);//aloco um buffer do tamanho necessário pra enviar a lista inteira
 
   for(i = 0; current != NULL; i++){
     // TODO: printar direito os endereços
@@ -101,34 +101,34 @@ node_t* find_node_by_ip_address(node_t* head, int desired_ip_addr){
     return NULL;
 }
 
-int main(int argc, char** argv){
-    unsigned char c_eth_addr[6];
+// int main(int argc, char** argv){
+//     unsigned char c_eth_addr[6];
 
-    get_eth_addr_as_6_bytes_from_string(c_eth_addr ,argv[1]);
+//     get_eth_addr_as_6_bytes_from_string(c_eth_addr ,argv[1]);
 
-    // printf("char: %02X:%02X:%02X:%02X:%02X:%02X\n",
-    // c_eth_addr[0], c_eth_addr[1],
-    // c_eth_addr[2], c_eth_addr[3],
-    // c_eth_addr[4], c_eth_addr[5]); // DEBUG
-    unsigned int sample_ip = 2982344134;
+//     // printf("char: %02X:%02X:%02X:%02X:%02X:%02X\n",
+//     // c_eth_addr[0], c_eth_addr[1],
+//     // c_eth_addr[2], c_eth_addr[3],
+//     // c_eth_addr[4], c_eth_addr[5]); // DEBUG
+//     unsigned int sample_ip = 2982344134;
 
-    node_t* first_node = add_node(NULL, sample_ip, c_eth_addr, 0);
-    node_t* aux = first_node;
-    node_t* node;
+//     node_t* first_node = add_node(NULL, sample_ip, c_eth_addr, 0);
+//     node_t* aux = first_node;
+//     node_t* node;
 
-    for (int i = 1; i < 10; i++){
-        node = add_node(first_node, sample_ip, c_eth_addr, i);
-        first_node = node;
-    }
-    node_t* find_ip_5 = find_node_by_ip_address(aux, 12);
-    if(find_ip_5 != NULL){
-        printf("Achei o nó com ip: %d\n", find_ip_5->ip_address);
-    } else {
-      printf("achei nulo\n");
-    }
+//     for (int i = 1; i < 10; i++){
+//         node = add_node(first_node, sample_ip, c_eth_addr, i);
+//         first_node = node;
+//     }
+//     node_t* find_ip_5 = find_node_by_ip_address(aux, 12);
+//     if(find_ip_5 != NULL){
+//         printf("Achei o nó com ip: %d\n", find_ip_5->ip_address);
+//     } else {
+//       printf("achei nulo\n");
+//     }
 
 
-    // delete_node_by_ip_address(&aux,0); // DEBUG
-    // print_list(aux);
+//     // delete_node_by_ip_address(&aux,0); // DEBUG
+//     // print_list(aux);
 
-}
+// }

@@ -59,8 +59,8 @@ char* arp_get_request(int connfd){
 }
 
 int arp_send_response(int connfd, char* buffer){
-	n = strlen(buffer);
-	m = send(connfd, buffer,n, 0);
+	int n = strlen(buffer);
+	int m = send(connfd, buffer,n, 0);
 	while(m < n) {
 		m += send(connfd, buffer + m, n - m, 0);
 	}

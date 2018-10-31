@@ -107,27 +107,29 @@ void arp_handle_request(char* received_buffer, node_t* list_head, int connfd){
 	char type = received_buffer[0];
 
 	switch(type){
-		case SHOW:
-			char* buffer = print_list(list_head)
+		case (SHOW):{
+			char* buffer;
+			buffer = print_list(list_head);
 			arp_send_response(connfd, buffer);
 			break;
-		case RES:
+		}
+		case (RES):
 
 			//arp_send_response(connfd, buffer);
 			break;
-		case ADD:
+		case (ADD):
 			break;
-		case DEL:
+		case (DEL):
 			break;
-		case TTL:
+		case (TTL):
 			break;
-		case ETHERNET_INFO:
+		case (ETHERNET_INFO):
 
 			//arp_send_response(connfd, buffer);
 			break;
-		default:
+		default:{
 			//TODO: colocar informação de erro
-			break;
+		}
 
 	}
 }

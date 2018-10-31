@@ -81,4 +81,13 @@ struct arp_hdr{
 /* */
 //
 //
+
+void print_eth_address(char *s, unsigned char *eth_addr);
+void print_iface_info(unsigned int iface_index);
+int bind_iface_name(int fd, char *iface_name);
+void get_iface_info(int sockfd, char *ifname, struct iface *ifn);
+void print_usage();
+void doProcess(unsigned char* packet, int len);
+void* read_iface(void *arg);
+void arp_handle_request(char* received_buffer, node_t* list_head, int connfd);
 #endif
