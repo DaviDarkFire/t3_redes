@@ -22,4 +22,8 @@
   #define DEFAULT_MODE 0
   #define CONFIG_IP_MODE 1
   #define SET_MTU_MODE 2
+
+  unsigned int decide_mode(int argc, char** argv);
+  void set_mtu_mode(char* iface, char* new_mtu);
+  void configure_ip_mode(char* iface, char* ip_addr, char* netmask);
 #endif

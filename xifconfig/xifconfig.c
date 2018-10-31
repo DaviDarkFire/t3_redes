@@ -1,4 +1,4 @@
-#include "defines.h"
+#include "xifconfig.h"
 
 unsigned int decide_mode(int argc, char** argv){
   if (argc == 1)

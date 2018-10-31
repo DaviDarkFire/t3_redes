@@ -23,7 +23,7 @@
 	#define MAX_IFACES	64
 	#define MAX_IFNAME_LEN	22
 	#define ETH_ADDR_LEN	6
-#endif
+
 /* */
 struct iface {
 	int		sockfd;
@@ -81,4 +81,4 @@ struct arp_hdr{
 /* */
 //
 //
-struct iface	my_ifaces[MAX_IFACES];
+#endif
