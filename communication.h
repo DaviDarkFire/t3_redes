@@ -16,12 +16,12 @@
 	#define PORT 5050
 	#define DEFFAULT_IP "127.0.0.1"
 
-	#define SHOW 0
-	#define RES 1
-	#define ADD 2
-	#define DEL 3
-	#define TTL 4
-	#define ETHERNET_INFO 5
+	#define XARP_SHOW 0
+	#define XARP_RES 1
+	#define XARP_ADD 2
+	#define XARP_DEL 3
+	#define XARP_TTL 4
+	#define XIFCONFIG_ETHERNET_INFO 5
 
 	int arp_socket_creation();
 	int arp_get_connection(int socket);
