@@ -4,6 +4,7 @@
   #include <stdio.h>
   #include <string.h>
   #include <stdlib.h>
+  #include "../communication.h"
 
   #define XARP_SHOW 0
   #define XARP_RES 1
