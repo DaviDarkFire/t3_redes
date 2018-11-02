@@ -20,5 +20,5 @@
   char* build_xarp_ttl_message(char* ttl);
   char* get_ip_addr_bytes_from_string(char* dotted_dec_ip);
   char* get_mac_addr_bytes_from_string(char* colon_format_mac);
-  char* get_ttl_bytes_from_string(int i_ttl);
+  char* get_ttl_bytes_from_string(char* str_ttl);
 #endif

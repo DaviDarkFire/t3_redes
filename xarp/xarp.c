@@ -3,8 +3,10 @@
 // xarp show
 char* build_xarp_show_message(){
   char* message;
-  message = malloc(1);
-  strcpy(message, (char*)XARP_SHOW); // opcode only
+  char opcode[1];
+  message = malloc(sizeof(char)*1);
+  sprintf(opcode, "%d", XARP_TTL);
+  memcpy(message, opcode, sizeof(char)); // opcode
   return message;
 }
 
@@ -12,13 +14,15 @@ char* build_xarp_show_message(){
 char* build_xarp_res_message(char** args){
   char* message;
   char* ip_bytes;
+  char opcode[1];
 
-  message = malloc(5); // 1 + 4
+  message = malloc(sizeof(char)*5); // 1 + 4
 
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
 
-  strcpy(message, (char*)XARP_RES); // opcodde
-  strcat(message, ip_bytes); // ip_address
+  sprintf(opcode, "%d", XARP_TTL);
+  memcpy(message, opcode, sizeof(char)); // opcode
+  memcpy(message+1, ip_bytes, 4); // ip address
   return message;
 }
 
@@ -56,21 +60,26 @@ char* get_ip_addr_bytes_from_string(char* dotted_dec_ip){
 //xarp add EndereçoIP EndereçoEthernet ttl
 char* build_xarp_add_message(char** args){
   char* mac_bytes;
-  char* message;
   char* ip_bytes;
+  char* ttl_bytes;
+  char* message;
+  char opcode[1];
 
   message = malloc(15); // 1 + 4 + 6 + 4
 
   mac_bytes = get_mac_addr_bytes_from_string(args[3]);
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
+  ttl_bytes = get_ttl_bytes_from_string(args[4]);
 
-  strcpy(message, (char*)XARP_ADD); // opcode
-  strcat(message, ip_bytes); // ip address
-  strcat(message, mac_bytes); // ethernet address as 6 bytes
-  strcat(message, args[4]); // ttl
+  sprintf(opcode, "%d", XARP_TTL);
+  memcpy(message, opcode, sizeof(char)); // opcode
+  memcpy(message+1, ip_bytes, 4); // ip address
+  memcpy(message+1+4, mac_bytes, 6); // ethernet address as 6 bytes
+  memcpy(message+1+4+6, ttl_bytes, 4); //ttl
 
   free(ip_bytes);
   free(mac_bytes);
+  free(ttl_bytes);
 
   return message;
 }
@@ -79,44 +88,45 @@ char* build_xarp_add_message(char** args){
 char* build_xarp_del_message(char** args){
   char* message;
   char* ip_bytes;
+  char opcode[1];
 
   message = malloc(5); // 1 + 4
 
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
-
-  strcpy(message, (char*) XARP_DEL);
-  strcat(message, ip_bytes);
+  sprintf(opcode, "%d", XARP_DEL);
+  memcpy(message, opcode, sizeof(char)); // opcode
+  memcpy(message+1, ip_bytes, 4); // ip address
 
   free(ip_bytes);
 
   return message;
 }
 
-char* get_ttl_bytes_from_string(int i_ttl){
-  char* ttl;
-  ttl = malloc(4);
+char* get_ttl_bytes_from_string(char* str_ttl){
+  char* ttl_bytes;
+  int i_ttl;
+  i_ttl = atoi(str_ttl);
+  ttl_bytes = malloc(sizeof(char)*4);
 
-  ttl[0] = i_ttl >> 24;
-  ttl[1] = i_ttl >> 16;
-  ttl[2] = i_ttl >> 8;
-  ttl[3] = i_ttl >> 0;
+  ttl_bytes[0] = i_ttl >> 24;
+  ttl_bytes[1] = i_ttl >> 16;
+  ttl_bytes[2] = i_ttl >> 8;
+  ttl_bytes[3] = i_ttl >> 0;
 
-  return ttl;
+  return ttl_bytes;
 }
 
 // xarp ttl <number>
 char* build_xarp_ttl_message(char* ttl){
-  char* message;
-  int aux;
-  char* ttl_bytes;
+  char* message = malloc(5*sizeof(char));
+  char* ttl_bytes = NULL;
+  char opcode[1];
 
-  message = malloc(5); // 1 + 4
+  ttl_bytes = get_ttl_bytes_from_string(ttl);
 
-  aux = atoi(ttl);
-  ttl_bytes = get_ttl_bytes_from_string(aux);
-
-  strcpy(message, (char*) XARP_TTL);
-  strcat(message, ttl_bytes);
+  sprintf(opcode, "%d", XARP_TTL);
+  memcpy(message, opcode, sizeof(char)); // opcode
+  memcpy(message+1, ttl_bytes, 4); // ttl
 
   free(ttl_bytes);
 
@@ -152,5 +162,5 @@ int main(int argc, char** argv){
   }
   // int sockfd = client_create_socket();
   // client_send_request(sockfd, message);
-  // free(message); // TODO: esse free fica aqui msm????
+  free(message); // TODO: esse free fica aqui msm????
 }
