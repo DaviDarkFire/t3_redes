@@ -3,7 +3,8 @@
 
 
 int arp_socket_creation(){ //criando o socket no qual o protocolo arp vai responder os outros programas
-	int sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	// int sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in serv_addr;
 
 	if(sockfd < 0) {
@@ -11,10 +12,10 @@ int arp_socket_creation(){ //criando o socket no qual o protocolo arp vai respon
 		exit(1);
 	}
 
-	memset((char*) &serv_addr, 0, sizeof(serv_addr)); 
+	memset((char*) &serv_addr, 0, sizeof(serv_addr));
 
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr(DEFFAULT_IP);
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(PORT);
 
 	if(bind(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) { //associa socket a porta que será usada
@@ -32,7 +33,10 @@ int arp_get_connection(int sockfd){
 	int connfd; //file descriptor pra cada conexão de cliente
 
 	clilen = sizeof(cli_addr);
-
+	if(listen(sockfd, 1) < 0) { //escuta requisições ao server
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+}
 	while(1) { //loop de conexão
 		memset((char*) &cli_addr, 0, sizeof(cli_addr)); //zera o serv_addr
 		connfd = accept(sockfd, (struct sockaddr*) &cli_addr, (unsigned int*) &clilen);//tenta nova conexão
@@ -40,7 +44,7 @@ int arp_get_connection(int sockfd){
 			fprintf(stderr, "ERROR: %s\n", strerror(errno));
 			exit(1);
 		}
-		close(sockfd);
+		// close(sockfd); // DEBUG comentei pra testar
 		return connfd;
 	}
 }
@@ -70,7 +74,7 @@ int arp_send_response(int connfd, char* buffer){
 int client_create_socket(){
 	int sockfd;
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  
+
 	if(sockfd < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
@@ -85,11 +89,11 @@ void client_send_request(int sockfd, char* buffer){
 	struct sockaddr_in serv_addr;
 
   	memset((char*) &serv_addr, 0, sizeof(serv_addr));
-  
+
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr =  htonl(INADDR_ANY);
+	serv_addr.sin_addr.s_addr =  inet_addr(DEFAULT_IP);
 	serv_addr.sin_port = htons(PORT);
-	
+
 	if(connect(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
@@ -108,7 +112,7 @@ char* client_get_response(int connfd){
 	int bytes_received = 0;
 	memset(buffer, 0, sizeof(buffer));
 
-	do{ 
+	do{
 			bytes_received = recv(connfd, buffer+n, sizeof(buffer)-n, 0);
 			n += bytes_received;
 

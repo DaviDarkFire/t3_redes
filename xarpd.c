@@ -176,7 +176,13 @@ int main(int argc, char** argv) {
 	}
 
 	//TODO: colocar aqui a execução da thread principal que fica escutando request dos programas auxiliares
-
+	// DEBUG start
+	int sockfd2 = arp_socket_creation();
+	int connfd = arp_get_connection(sockfd2);
+	char* buff = arp_get_request(connfd);
+	printf("BUFFER RECEBIDO: %s\n", buff);
+	arp_send_response(connfd, "MACACADA REUNIDA");
+	// DEBUG end
 	return 0;
 }
 /* */

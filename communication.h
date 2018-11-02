@@ -15,7 +15,7 @@
 	#include "linked_list.h"
 
 	#define PORT 5050
-	#define DEFFAULT_IP "127.0.0.1"
+	#define DEFAULT_IP "127.0.0.1"
 
 	#define XARP_SHOW 0
 	#define XARP_RES 1

@@ -135,32 +135,40 @@ char* build_xarp_ttl_message(char* ttl){
 
 int main(int argc, char** argv){
   char* op = argv[1];
-  char* message;
+  char* message = "banana";
 
-  if(strcmp(op, "show") == 0){
-    message = build_xarp_show_message();
-  }
-  else{
-    if(strcmp(op, "res") == 0){
-      message = build_xarp_res_message(argv);
-    }
-    else{
-      if(strcmp(op, "add") == 0){
-        message = build_xarp_add_message(argv);
-      }
-      else{
-        if(strcmp(op, "del") == 0){
-          message = build_xarp_del_message(argv);
-        }
-        else{
-          if(strcmp(op, "ttl") == 0){
-            message = build_xarp_ttl_message(argv[2]);
-          }
-        }
-      }
-    }
-  }
-  // int sockfd = client_create_socket();
-  // client_send_request(sockfd, message);
+  // DEBUG start
+  int sockfd = client_create_socket();
+
+  client_send_request(sockfd,message);
+  char* resp = client_get_response(sockfd);
+  printf("MSG RECEBIDA: %s\n", resp);
+  //DEBUG end
+
+  // if(strcmp(op, "show") == 0){
+  //   message = build_xarp_show_message();
+  // }
+  // else{
+  //   if(strcmp(op, "res") == 0){
+  //     message = build_xarp_res_message(argv);
+  //   }
+  //   else{
+  //     if(strcmp(op, "add") == 0){
+  //       message = build_xarp_add_message(argv);
+  //     }
+  //     else{
+  //       if(strcmp(op, "del") == 0){
+  //         message = build_xarp_del_message(argv);
+  //       }
+  //       else{
+  //         if(strcmp(op, "ttl") == 0){
+  //           message = build_xarp_ttl_message(argv[2]);
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+  // // int sockfd = client_create_socket();
+  // // client_send_request(sockfd, message);
   free(message); // TODO: esse free fica aqui msm????
 }
