@@ -13,8 +13,10 @@
 	#include <net/ethernet.h>
 	#include <sys/ioctl.h>
 	#include <net/if.h>
+	#include <pthread.h>
 	#include "linked_list.h"
 	#include "communication.h"
+	#include <linux/if.h>
 	/* */
 	/* */
 	#define MAX_PACKET_SIZE 65536

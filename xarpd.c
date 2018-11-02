@@ -107,22 +107,22 @@ void arp_handle_request(char* received_buffer, node_t* list_head, int connfd){
 	char type = received_buffer[0];
 
 	switch(type){
-		case (SHOW):{
+		case (XARP_SHOW):{
 			char* buffer = print_list(list_head);
 			arp_send_response(connfd, buffer);
 			break;
 		}
-		case (RES):
+		case (XARP_RES):
 
 			//arp_send_response(connfd, buffer);
 			break;
-		case (ADD):
+		case (XARP_ADD):
 			break;
-		case (DEL):
+		case (XARP_DEL):
 			break;
-		case (TTL):
+		case (XARP_TTL):
 			break;
-		case (ETHERNET_INFO):
+		case (XIFCONFIG_ETHERNET_INFO):
 
 			//arp_send_response(connfd, buffer);
 			break;

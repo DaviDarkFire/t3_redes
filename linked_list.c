@@ -7,7 +7,7 @@ node_t* add_node(node_t* current_last_node, int ip_address, unsigned char eth_ad
     // printf("TAMANHO eth_address: %s\n", eth_address);
     // printf("eth_address dentro da addnode: %c %c %c %c %c %c\n", eth_address[0], eth_address[1],
     //     eth_address[2], eth_address[3], eth_address[4], eth_address[5]);
-    strncpy(new_node->eth_address, eth_address, 6);
+    memcpy(new_node->eth_address, eth_address, 6);
     new_node->ttl = ttl;
     new_node->next = NULL;
     if(current_last_node != NULL)
@@ -16,7 +16,6 @@ node_t* add_node(node_t* current_last_node, int ip_address, unsigned char eth_ad
 }
 
 int delete_node_by_ip_address(node_t** head, int del_ip_addr){
-  int i;
   int retval = -1;
   node_t* current = *head;
   node_t* previous = NULL;
@@ -76,18 +75,18 @@ int list_size(node_t * head){
 
 // modifies dest_array with 6 separate bytes on each array element given a string with format XX:XX:XX:XX:XX:XX
 void get_eth_addr_as_6_bytes_from_string(unsigned char dest_array[6], char* src_str){
-    int i_aux[6];
+    unsigned int aux[6];
 
     sscanf(src_str, "%x:%x:%x:%x:%x:%x",
-    &i_aux[0], &i_aux[1], &i_aux[2],
-    &i_aux[3], &i_aux[4], &i_aux[5]);
+    &aux[0], &aux[1], &aux[2],
+    &aux[3], &aux[4], &aux[5]);
 
-    dest_array[0] = (unsigned char) i_aux[0];
-    dest_array[1] = (unsigned char) i_aux[1];
-    dest_array[2] = (unsigned char) i_aux[2];
-    dest_array[3] = (unsigned char) i_aux[3];
-    dest_array[4] = (unsigned char) i_aux[4];
-    dest_array[5] = (unsigned char) i_aux[5];
+    dest_array[0] = (unsigned char) aux[0];
+    dest_array[1] = (unsigned char) aux[1];
+    dest_array[2] = (unsigned char) aux[2];
+    dest_array[3] = (unsigned char) aux[3];
+    dest_array[4] = (unsigned char) aux[4];
+    dest_array[5] = (unsigned char) aux[5];
 }
 
 // returns desired node if it exists in the list, otherwise, returns NULL (be careful!)
