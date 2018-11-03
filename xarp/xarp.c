@@ -42,20 +42,7 @@ char* get_mac_addr_bytes_from_string(char* colon_format_mac){
   return mac_bytes;
 }
 
-char* get_ip_addr_bytes_from_string(char* dotted_dec_ip){
-  unsigned int values[4];
-  int i;
-  char* ip_bytes;
-  ip_bytes = malloc(4);
 
-  sscanf(dotted_dec_ip, "%u.%u.%u.%u",
-  &values[0], &values[1], &values[2], &values[3]);
-
-  for(i = 0; i < 4; i++){
-    ip_bytes[i] = (char) values[i];
-  }
-  return ip_bytes;
-}
 
 //xarp add EndereçoIP EndereçoEthernet ttl
 char* build_xarp_add_message(char** args){
