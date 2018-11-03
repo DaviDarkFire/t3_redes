@@ -39,12 +39,29 @@ void configure_ip_mode(char* iface, char* ip_addr, char* netmask){
     ioctl(sockfd, SIOCSIFFLAGS, &ifr);
 }
 
+char* build_ifconfig_info_message(){
+  char* message;
+  char opcode[1];
+
+  message = malloc(sizeof(char)*1); //
+
+  sprintf(opcode, "%d", XIFCONFIG_INFO);
+  memcpy(message, opcode, sizeof(char)); // opcode
+  return message;
+}
+
 int main(int argc, char** argv){
   unsigned int mode = decide_mode(argc, argv);
   switch(mode){
-    case DEFAULT_MODE:
+    case DEFAULT_MODE:{
+      char* message = build_ifconfig_info_message();
+      printf("%s\n", message);
+      // int sockfd = client_create_socket();
+      // client_send_request(sockfd, message);
+      // char* resp = client_get_response();
       printf("You chose default mode.\n"); //DEBUG
-    break;
+      break;
+    }
 
     case CONFIG_IP_MODE:
       printf("You chose ip configuration mode.\n"); // DEBUG
