@@ -22,7 +22,9 @@
 	#define XARP_ADD 2
 	#define XARP_DEL 3
 	#define XARP_TTL 4
-	#define XIFCONFIG_ETHERNET_INFO 5
+	#define XIFCONFIG_INFO 5
+  #define XIFCONFIG_IP 6
+  #define XIFCONFIG_MTU 7
 
 	int arp_socket_creation();
 	int arp_get_connection(int socket);
@@ -32,4 +34,6 @@
 	void client_send_request(int socket, char* buffer);
 	char* client_get_response(int connfd);
 	int arp_send_response(int connfd, char* buffer);
+	char* get_ip_addr_bytes_from_string(char* dotted_dec_ip);
+	void printBits(size_t const size, void const * const ptr);
 #endif

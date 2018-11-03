@@ -122,7 +122,7 @@ void arp_handle_request(char* received_buffer, node_t* list_head, int connfd){
 			break;
 		case (XARP_TTL):
 			break;
-		case (XIFCONFIG_ETHERNET_INFO):
+		case (XIFCONFIG_INFO):
 
 			//arp_send_response(connfd, buffer);
 			break;
@@ -171,11 +171,6 @@ int main(int argc, char** argv) {
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
 
-	for(i = 0; i < argc-1; i++){
-		pthread_join(tid[i], NULL);
-	}
-
-	//TODO: colocar aqui a execução da thread principal que fica escutando request dos programas auxiliares
 	// DEBUG start
 	int sockfd2 = arp_socket_creation();
 	int connfd = arp_get_connection(sockfd2);
@@ -183,6 +178,11 @@ int main(int argc, char** argv) {
 	printf("BUFFER RECEBIDO: %s\n", buff);
 	arp_send_response(connfd, "MACACADA REUNIDA");
 	// DEBUG end
+
+	for(i = 0; i < argc-1; i++){
+		pthread_join(tid[i], NULL);
+	}
+
 	return 0;
 }
 /* */

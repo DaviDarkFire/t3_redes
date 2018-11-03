@@ -15,16 +15,16 @@ int arp_socket_creation(){ //criando o socket no qual o protocolo arp vai respon
 	memset((char*) &serv_addr, 0, sizeof(serv_addr));
 
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(PORT);
+
+	printf("Porta no arp_socket_creation: %d\n", PORT); // DEBUG
 
 	if(bind(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) { //associa socket a porta que será usada
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
 	}
 	return sockfd;
-
-
 }
 
 int arp_get_connection(int sockfd){
@@ -81,9 +81,8 @@ int client_create_socket(){
 	}
 
 	return sockfd;
-
-
 }
+
 void client_send_request(int sockfd, char* buffer){
 
 	struct sockaddr_in serv_addr;
@@ -93,6 +92,8 @@ void client_send_request(int sockfd, char* buffer){
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr =  inet_addr(DEFAULT_IP);
 	serv_addr.sin_port = htons(PORT);
+
+	printf("client_send_request: %s, port: %d\n", DEFAULT_IP, PORT); // DEBUG
 
 	if(connect(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
@@ -122,6 +123,37 @@ char* client_get_response(int connfd){
 	return 0;
 
 
+}
+
+char* get_ip_addr_bytes_from_string(char* dotted_dec_ip){
+  int values[4];
+  int i;
+  char* ip_bytes;
+  ip_bytes = malloc(sizeof(char)*4);
+
+  sscanf(dotted_dec_ip, "%d.%d.%d.%d",
+  &values[0], &values[1], &values[2], &values[3]);
+
+  for(i = 0; i < 4; i++){
+    ip_bytes[i] = (char) values[i];
+  }
+  return ip_bytes;
+}
+
+void printBits(size_t const size, void const * const ptr){
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+
+    for (i=size-1;i>=0;i--)
+    {
+        for (j=7;j>=0;j--)
+        {
+            byte = (b[i] >> j) & 1;
+            printf("%u", byte);
+        }
+    }
+    puts("");
 }
 
 // int main(void){
