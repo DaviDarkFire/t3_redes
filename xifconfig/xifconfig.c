@@ -39,7 +39,7 @@ void configure_ip_mode(char* iface, char* ip_addr, char* netmask){
     ioctl(sockfd, SIOCSIFFLAGS, &ifr);
 }
 
-char* build_ifconfig_info_message(){
+char* build_xifconfig_info_message(){
   char* message;
   char opcode[1];
 
@@ -50,12 +50,44 @@ char* build_ifconfig_info_message(){
   return message;
 }
 
+// xifconfig <interface> <IP address> <IP Netmask>
+char* build_xifconfig_ip_message(char** args){
+  char* message;
+  char opcode[1];
+  char* ip_bytes;
+  char* netmask;
+
+  message = malloc(sizeof(char)*31); // 1 + 22 + 4 + 4
+  ip_bytes = get_ip_addr_bytes_from_string(args[2]);
+  netmask = get_ip_addr_bytes_from_string(args[3]); // netmask is in the same format as an ip address
+
+  printf("args[2] na build: %s\n", args[2]); // DEBUG
+  printf("args[3] na build: %s\n", args[3]); // DEBUG
+  printf("ip_bytes na build: %s\n", ip_bytes); // DEBUG
+  printf("netmask na build: %s\n", netmask); // DEBUG
+
+  printBits(sizeof(ip_bytes), ip_bytes); // DEBUG
+  printBits(sizeof(netmask), netmask); // DEBUG
+
+  sprintf(opcode, "%d", XIFCONFIG_IP);
+  memcpy(message, opcode, sizeof(char)); // opcode
+  memcpy(message+1, args[1], MAX_IFNAME_LEN); // ifname
+  memcpy(message+1+22, ip_bytes, 4);
+  memcpy(message+1+22+4, netmask, 4);
+
+  free(ip_bytes);
+  free(netmask);
+
+  return message;
+}
+
 int main(int argc, char** argv){
   unsigned int mode = decide_mode(argc, argv);
+  char* message;
   switch(mode){
     case DEFAULT_MODE:{
-      char* message = build_ifconfig_info_message();
-      printf("%s\n", message);
+      message = build_xifconfig_info_message();
+      printf("%s\n", message); // DEBUG
       // int sockfd = client_create_socket();
       // client_send_request(sockfd, message);
       // char* resp = client_get_response();
@@ -64,9 +96,11 @@ int main(int argc, char** argv){
     }
 
     case CONFIG_IP_MODE:
+      message = build_xifconfig_ip_message(argv);
+      printf("%s &&&\n", message); // DEBUG
       printf("You chose ip configuration mode.\n"); // DEBUG
       configure_ip_mode(argv[1], argv[2], argv[3]);
-      printf("Interface's IP is configured as desired.\n"); // DEBUG
+      // printf("Interface's IP is configured as desired.\n"); // DEBUG
     break;
 
     case SET_MTU_MODE:

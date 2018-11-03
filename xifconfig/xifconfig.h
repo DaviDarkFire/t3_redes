@@ -23,10 +23,15 @@
   #define DEFAULT_MODE 0
   #define CONFIG_IP_MODE 1
   #define SET_MTU_MODE 2
+
   #define XIFCONFIG_INFO 5
+  #define XIFCONFIG_IP 6
+  #define XIFCONFIG_MTU 7
+
+  #define MAX_IFNAME_LEN	22
 
   unsigned int decide_mode(int argc, char** argv);
   void set_mtu_mode(char* iface, char* new_mtu);
   void configure_ip_mode(char* iface, char* ip_addr, char* netmask);
-  char* build_ifconfig_info_message();
+  char* build_xifconfig_info_message();
 #endif
