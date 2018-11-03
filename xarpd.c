@@ -166,8 +166,7 @@ int main(int argc, char** argv) {
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 		int success = pthread_create(&(tid[i]), &attr, read_iface, &my_ifaces[i]);
-		printf("pthread_create returns: %d\n", success);
-		print_iface_info(i);
+		// print_iface_info(i); // DEBUG
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
 
@@ -176,7 +175,7 @@ int main(int argc, char** argv) {
 	int connfd = arp_get_connection(sockfd2);
 	char* buff = arp_get_request(connfd);
 	printf("BUFFER RECEBIDO: %s\n", buff);
-	arp_send_response(connfd, "MACACADA REUNIDA");
+	arp_send_response(connfd, "Resposta do daemon!\n");
 	// DEBUG end
 
 	for(i = 0; i < argc-1; i++){

@@ -18,8 +18,6 @@ int arp_socket_creation(){ //criando o socket no qual o protocolo arp vai respon
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(PORT);
 
-	printf("Porta no arp_socket_creation: %d\n", PORT); // DEBUG
-
 	if(bind(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) { //associa socket a porta que será usada
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
@@ -93,36 +91,44 @@ void client_send_request(int sockfd, char* buffer){
 	serv_addr.sin_addr.s_addr =  inet_addr(DEFAULT_IP);
 	serv_addr.sin_port = htons(PORT);
 
-	printf("client_send_request: %s, port: %d\n", DEFAULT_IP, PORT); // DEBUG
-
 	if(connect(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
 	}
 
-	int bytes_read = 0;
-	int bytes_sent = send(sockfd, buffer, bytes_read, 0);
-	while(bytes_sent < bytes_read){
-		bytes_sent += send(sockfd, buffer + bytes_sent, bytes_read - bytes_sent, 0);
+	// int bytes_read = 0;
+	// int bytes_sent = send(sockfd, buffer, bytes_read, 0);
+	// while(bytes_sent < bytes_read){
+	// 	bytes_sent += send(sockfd, buffer + bytes_sent, bytes_read - bytes_sent, 0);
+	// }
+
+	if(send(sockfd, buffer, strlen(buffer), 0) < 0) { // DEBUG: peguei do client.c
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
 	}
 }
 
 char* client_get_response(int connfd){
-	char buffer[BUFFSIZE];
+	char* buffer = malloc(sizeof(char)*BUFFSIZE);
 	int n = 0;
 	int bytes_received = 0;
-	memset(buffer, 0, sizeof(buffer));
+	memset(buffer, 0, BUFFSIZE);
+	printf("comecei a receber na client_get_response\n"); //DEBUG
 
 	do{
 			bytes_received = recv(connfd, buffer+n, sizeof(buffer)-n, 0);
 			n += bytes_received;
+			printf("to recebendo %d bytes\n", n);
+	}while(bytes_received != 0);
 
-	  }while(bytes_received != 0);
+	printf("Terminei de receber na client_get_response\n");//DEBUG
+	// if(recv(connfd, buffer, sizeof(buffer), 0) < 0) { // DEBUG: peguei do client.c
+	// 	fprintf(stderr, "ERROR: %s\n", strerror(errno));
+	// 	exit(1);
+	// }
 
 	close(connfd);
-	return 0;
-
-
+	return buffer;
 }
 
 char* get_ip_addr_bytes_from_string(char* dotted_dec_ip){

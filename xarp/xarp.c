@@ -122,7 +122,7 @@ char* build_xarp_ttl_message(char* ttl){
 
 int main(int argc, char** argv){
   char* op = argv[1];
-  char* message = "banana";
+  char* message = "Request do xarp!\n";
 
   // DEBUG start
   int sockfd = client_create_socket();
@@ -130,6 +130,8 @@ int main(int argc, char** argv){
   client_send_request(sockfd,message);
   char* resp = client_get_response(sockfd);
   printf("MSG RECEBIDA: %s\n", resp);
+  free(resp);
+  printf("Request foi enviada!\n");
   //DEBUG end
 
   // if(strcmp(op, "show") == 0){
