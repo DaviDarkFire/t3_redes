@@ -165,18 +165,82 @@ int main(int argc, char** argv) {
 
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
-		int success = pthread_create(&(tid[i]), &attr, read_iface, &my_ifaces[i]);
+		pthread_create(&(tid[i]), &attr, read_iface, &my_ifaces[i]);
 		// print_iface_info(i); // DEBUG
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
 
-	// DEBUG start
-	int sockfd2 = arp_socket_creation();
-	int connfd = arp_get_connection(sockfd2);
-	char* buff = arp_get_request(connfd);
-	printf("BUFFER RECEBIDO: %s\n", buff);
-	arp_send_response(connfd, "Resposta do daemon!\n");
-	// DEBUG end
+	pid_t pid;
+	int sockfd2;
+	int clilen;
+	int newsockfd2;
+	char buffer[BUFFSIZE];
+	struct sockaddr_in serv_addr;
+	struct sockaddr_in cli_addr;
+
+	sockfd2 = socket(AF_INET, SOCK_STREAM, 0);
+	if(sockfd2 < 0) {
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	memset((char*) &serv_addr, 0, sizeof(serv_addr));
+
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(PORT);
+	//man bind
+	if(bind(sockfd2, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	if(listen(sockfd2, LISTEN_ENQ) < 0) {
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	clilen = sizeof(cli_addr);
+
+	while(1) {
+		newsockfd2 = accept(sockfd2, (struct sockaddr*) &cli_addr, (unsigned int*) &clilen);
+		if(newsockfd2 < 0) {
+			fprintf(stderr, "ERROR: %s\n", strerror(errno));
+			exit(1);
+		}
+
+		pid = fork();
+		if(pid < 0) {
+			fprintf(stderr, "ERROR: %s\n", strerror(errno));
+			exit(1);
+		}
+
+		if(pid == 0) {
+			close(sockfd2);
+
+			memset(buffer, 0, sizeof(buffer));
+
+			if(recv(newsockfd2, buffer, sizeof(buffer), 0) < 0) {
+				fprintf(stderr, "ERROR: %s\n", strerror(errno));
+				exit(1);
+			}
+
+			printf("Mensagem recebida: %s\n", buffer);
+
+			if(send(newsockfd2, "Obrigado, eu recebi a mensagem", 32, 0) < 0) {
+				fprintf(stderr, "ERROR: %s\n", strerror(errno));
+				exit(1);
+			}
+
+			close(newsockfd2);
+
+			// return 0;
+		} else {
+			close(newsockfd2);
+		}
+	}
+
+	close(sockfd2);
 
 	for(i = 0; i < argc-1; i++){
 		pthread_join(tid[i], NULL);

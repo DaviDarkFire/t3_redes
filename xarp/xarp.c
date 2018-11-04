@@ -122,42 +122,74 @@ char* build_xarp_ttl_message(char* ttl){
 
 int main(int argc, char** argv){
   char* op = argv[1];
-  char* message = "Request do xarp!\n";
+  char* message;
 
-  // DEBUG start
-  int sockfd = client_create_socket();
 
-  client_send_request(sockfd,message);
-  char* resp = client_get_response(sockfd);
-  printf("MSG RECEBIDA: %s\n", resp);
-  free(resp);
-  printf("Request foi enviada!\n");
-  //DEBUG end
+  if(strcmp(op, "show") == 0){
+    message = build_xarp_show_message();
+  }
+  else{
+    if(strcmp(op, "res") == 0){
+      message = build_xarp_res_message(argv);
+    }
+    else{
+      if(strcmp(op, "add") == 0){
+        message = build_xarp_add_message(argv);
+      }
+      else{
+        if(strcmp(op, "del") == 0){
+          message = build_xarp_del_message(argv);
+        }
+        else{
+          if(strcmp(op, "ttl") == 0){
+            message = build_xarp_ttl_message(argv[2]);
+          }
+        }
+      }
+    }
+  }
 
-  // if(strcmp(op, "show") == 0){
-  //   message = build_xarp_show_message();
-  // }
-  // else{
-  //   if(strcmp(op, "res") == 0){
-  //     message = build_xarp_res_message(argv);
-  //   }
-  //   else{
-  //     if(strcmp(op, "add") == 0){
-  //       message = build_xarp_add_message(argv);
-  //     }
-  //     else{
-  //       if(strcmp(op, "del") == 0){
-  //         message = build_xarp_del_message(argv);
-  //       }
-  //       else{
-  //         if(strcmp(op, "ttl") == 0){
-  //           message = build_xarp_ttl_message(argv[2]);
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-  // // int sockfd = client_create_socket();
-  // // client_send_request(sockfd, message);
-  free(message); // TODO: esse free fica aqui msm????
+  int sockfd;
+	char buffer[BUFFSIZE];
+	struct sockaddr_in serv_addr;
+  sprintf(buffer, "%s", message);
+  free(message);
+
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+	if(sockfd < 0) {
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	memset((char*) &serv_addr, 0, sizeof(serv_addr));
+
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = inet_addr(DEFAULT_IP);
+	serv_addr.sin_port = htons(PORT);
+
+	if(connect(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	memset(buffer, 0, sizeof(buffer));
+  // strcpy(buffer, "Request do client.\n"); // DEBUG
+
+	//man send
+	if(send(sockfd, buffer, strlen(buffer), 0) < 0) {
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	memset(buffer, 0, sizeof(buffer));
+	//man recv
+	if(recv(sockfd, buffer, sizeof(buffer), 0) < 0) {
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	printf("Mensagem recebida: \"%s\"\n", buffer);
+
+  return 0;
 }

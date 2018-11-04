@@ -26,6 +26,9 @@
 	#define MAX_IFNAME_LEN	22
 	#define ETH_ADDR_LEN	6
 
+	#define BUFFSIZE 1024
+	#define LISTEN_ENQ 5
+
 /* */
 struct iface {
 	int		sockfd;

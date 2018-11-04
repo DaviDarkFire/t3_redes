@@ -85,7 +85,7 @@ void client_send_request(int sockfd, char* buffer){
 
 	struct sockaddr_in serv_addr;
 
-  	memset((char*) &serv_addr, 0, sizeof(serv_addr));
+  memset((char*) &serv_addr, 0, sizeof(serv_addr));
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr =  inet_addr(DEFAULT_IP);
@@ -114,18 +114,20 @@ char* client_get_response(int connfd){
 	int bytes_received = 0;
 	memset(buffer, 0, BUFFSIZE);
 	printf("comecei a receber na client_get_response\n"); //DEBUG
+	//
+	// do{
+	// 		printf("entrei no do da client_get_response\n"); // DEBUG
+	// 		bytes_received = recv(connfd, buffer+n, sizeof(buffer)-n, 0);
+	// 		printf("bytes_received: %d", bytes_received); // DEBUG
+	// 		n += bytes_received;
+	// 		printf("to recebendo %d bytes\n", n); // DEBUG
+	// }while(bytes_received != 0);
 
-	do{
-			bytes_received = recv(connfd, buffer+n, sizeof(buffer)-n, 0);
-			n += bytes_received;
-			printf("to recebendo %d bytes\n", n);
-	}while(bytes_received != 0);
-
-	printf("Terminei de receber na client_get_response\n");//DEBUG
-	// if(recv(connfd, buffer, sizeof(buffer), 0) < 0) { // DEBUG: peguei do client.c
-	// 	fprintf(stderr, "ERROR: %s\n", strerror(errno));
-	// 	exit(1);
-	// }
+	// printf("Terminei de receber na client_get_response\n");//DEBUG
+	if(recv(connfd, buffer, sizeof(buffer), 0) < 0) { // DEBUG: peguei do client.c
+		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		exit(1);
+	}
 
 	close(connfd);
 	return buffer;

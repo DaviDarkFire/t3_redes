@@ -6,6 +6,7 @@
   #include <stdlib.h>
   #include "../communication.h"
 
+  #define BUFFSIZE 1024
   #define XARP_SHOW 0
   #define XARP_RES 1
   #define XARP_ADD 2
