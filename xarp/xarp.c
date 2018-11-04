@@ -149,11 +149,13 @@ int main(int argc, char** argv){
     }
   }
 
+  printf("message: %s\n", message); //DEBUG
+
   int sockfd;
 	char buffer[BUFFSIZE];
 	struct sockaddr_in serv_addr;
-  sprintf(buffer, "%s", message);
-  free(message);
+
+  sprintf(buffer, "%s\0", message);
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -173,17 +175,12 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 
-	memset(buffer, 0, sizeof(buffer));
-  // strcpy(buffer, "Request do client.\n"); // DEBUG
-
-	//man send
 	if(send(sockfd, buffer, strlen(buffer), 0) < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
 	}
 
 	memset(buffer, 0, sizeof(buffer));
-	//man recv
 	if(recv(sockfd, buffer, sizeof(buffer), 0) < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
@@ -191,5 +188,6 @@ int main(int argc, char** argv){
 
 	printf("Mensagem recebida: \"%s\"\n", buffer);
 
+  free(message);
   return 0;
 }

@@ -96,4 +96,5 @@ void print_usage();
 void doProcess(unsigned char* packet, int len);
 void* read_iface(void *arg);
 void arp_handle_request(char* received_buffer, node_t* list_head, int connfd);
+void daemon_handle_request(char* request, int sockfd, node_t* head){
 #endif

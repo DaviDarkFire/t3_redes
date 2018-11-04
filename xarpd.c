@@ -133,6 +133,33 @@ void arp_handle_request(char* received_buffer, node_t* list_head, int connfd){
 	}
 }
 
+void daemon_handle_request(char* request, int sockfd, node_t* head){
+
+	switch(atoi(request[0])){
+		case XARP_SHOW:
+			dup2(sockfd, STDOUT_FILENO);
+			dup2(sockfd, STDERR_FILENO);
+			close(sockfd);
+			print_list(head);
+			break;
+
+		case XARP_RES:
+			break;
+
+		case XARP_ADD:
+			break;
+
+		case XARP_DEL:
+			break;
+
+		case XARP_TTL:
+			break;
+			
+		default:
+			break;
+	}
+}
+
 /* */
 // main function
 int main(int argc, char** argv) {
@@ -169,6 +196,9 @@ int main(int argc, char** argv) {
 		// print_iface_info(i); // DEBUG
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
+
+	char c_eth_addr[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+	node_t* head = add_node(NULL, 100, c_eth_addr, 0); // DEBUG
 
 	pid_t pid;
 	int sockfd2;
@@ -226,6 +256,8 @@ int main(int argc, char** argv) {
 			}
 
 			printf("Mensagem recebida: %s\n", buffer);
+
+			daemon_handle_request(buffer, newsockfd2, head);
 
 			if(send(newsockfd2, "Obrigado, eu recebi a mensagem", 32, 0) < 0) {
 				fprintf(stderr, "ERROR: %s\n", strerror(errno));

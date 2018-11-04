@@ -14,9 +14,9 @@
     struct node* next;
   } node_t;
 
-  node_t* add_node(node_t* current_last_node, int ip_address, unsigned char eth_address[6], int ttl);
+  node_t* add_node(node_t* current_last_node, unsigned int ip_address, unsigned char eth_address[6], int ttl);
   int delete_node_by_ip_address(node_t** head, int del_ip_addr);
-  char* print_list(node_t * head);
+  void/*char**/ print_list(node_t * head);
   int list_size(node_t * head);
   void get_eth_addr_as_6_bytes_from_string(unsigned char dest_array[6], char* src_str);
   node_t* find_node_by_ip_address(node_t* head, int desired_ip_addr);
