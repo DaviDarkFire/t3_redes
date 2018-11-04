@@ -5,7 +5,7 @@ char* build_xarp_show_message(){
   char* message;
   char opcode[1];
   message = malloc(sizeof(char)*1);
-  sprintf(opcode, "%d", XARP_TTL);
+  sprintf(opcode, "%d", XARP_SHOW);
   memcpy(message, opcode, sizeof(char)); // opcode
   return message;
 }
@@ -20,7 +20,7 @@ char* build_xarp_res_message(char** args){
 
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
 
-  sprintf(opcode, "%d", XARP_TTL);
+  sprintf(opcode, "%d", XARP_RES);
   memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, ip_bytes, 4); // ip address
   return message;
@@ -58,7 +58,7 @@ char* build_xarp_add_message(char** args){
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
   ttl_bytes = get_ttl_bytes_from_string(args[4]);
 
-  sprintf(opcode, "%d", XARP_TTL);
+  sprintf(opcode, "%d", XARP_ADD);
   memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, ip_bytes, 4); // ip address
   memcpy(message+1+4, mac_bytes, 6); // ethernet address as 6 bytes
@@ -151,7 +151,7 @@ int main(int argc, char** argv){
 
   printf("message: %s\n", message); //DEBUG
 
-  int sockfd;
+  int sockfd, bytes_received, total_bytes_received;
 	char buffer[BUFFSIZE];
 	struct sockaddr_in serv_addr;
 
@@ -181,12 +181,19 @@ int main(int argc, char** argv){
 	}
 
 	memset(buffer, 0, sizeof(buffer));
-	if(recv(sockfd, buffer, sizeof(buffer), 0) < 0) {
+
+  total_bytes_received = 0;
+  do{
+      bytes_received = recv(sockfd, buffer+total_bytes_received, BUFFSIZE-total_bytes_received, 0);
+			total_bytes_received += bytes_received;
+	}while(bytes_received > 0);
+
+	if(bytes_received < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
 	}
 
-	printf("Mensagem recebida: \"%s\"\n", buffer);
+	printf("Mensagem recebida:\n%s\n", buffer);
 
   free(message);
   return 0;

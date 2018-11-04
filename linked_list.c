@@ -4,9 +4,6 @@ node_t* add_node(node_t* current_last_node, unsigned int ip_address, unsigned ch
     node_t* new_node;
     new_node = (node_t*) malloc(sizeof(node_t));
     new_node->ip_address = ip_address;
-    // printf("TAMANHO eth_address: %s\n", eth_address);
-    // printf("eth_address dentro da addnode: %c %c %c %c %c %c\n", eth_address[0], eth_address[1],
-    //     eth_address[2], eth_address[3], eth_address[4], eth_address[5]);
     memcpy(new_node->eth_address, eth_address, 6);
     new_node->ttl = ttl;
     new_node->next = NULL;
@@ -45,28 +42,20 @@ int delete_node_by_ip_address(node_t** head, int del_ip_addr){
 }
 
 void /*char**/ print_list(node_t * head){
-  node_t * current = head;
+  node_t * current = head->next;
   struct in_addr ip_addr;
   int i;
-  // printf("Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
-
-  // int l_size = list_size(head); //função que retorna o tamanho da lista em bytes
-  // char* buffer = malloc(sizeof(char)*l_size);//aloco um buffer do tamanho necessário pra enviar a lista inteira
+  printf("Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
 
   for(i = 0; current != NULL; i++){
     ip_addr.s_addr = (uint32_t) ntohl(current->ip_address);
 
-    // sprintf(buffer, "%d\t\t%s\t\t%02X:%02X:%02X:%02X:%02X:%02X\t\t%d\n",
-    // i, inet_ntoa(ip_addr), current->eth_address[0], current->eth_address[1],
-    // current->eth_address[2], current->eth_address[3], current->eth_address[4],
-    // current->eth_address[5], current->ttl);
     printf("%d\t\t%s\t\t%02X:%02X:%02X:%02X:%02X:%02X\t\t%d\n",
     i, inet_ntoa(ip_addr), current->eth_address[0], current->eth_address[1],
     current->eth_address[2], current->eth_address[3], current->eth_address[4],
     current->eth_address[5], current->ttl);
     current = current->next;
   }
-  // return buffer;
 }
 
 int list_size(node_t * head){

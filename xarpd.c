@@ -1,10 +1,9 @@
 #include "xarpd.h"
 
-struct iface	my_ifaces[MAX_IFACES];
+struct iface my_ifaces[MAX_IFACES];
 //
 // Print an Ethernet address
-void print_eth_address(char *s, unsigned char *eth_addr)
-{
+void print_eth_address(char *s, unsigned char *eth_addr){
 	printf("%s %02X:%02X:%02X:%02X:%02X:%02X", s,
 	       eth_addr[0], eth_addr[1], eth_addr[2],
 	       eth_addr[3], eth_addr[4], eth_addr[5]);
@@ -103,39 +102,9 @@ void* read_iface(void *arg)
 	}
 }
 
-void arp_handle_request(char* received_buffer, node_t* list_head, int connfd){
-	char type = received_buffer[0];
-
-	switch(type){
-		case (XARP_SHOW):{
-			char* buffer = print_list(list_head);
-			arp_send_response(connfd, buffer);
-			break;
-		}
-		case (XARP_RES):
-
-			//arp_send_response(connfd, buffer);
-			break;
-		case (XARP_ADD):
-			break;
-		case (XARP_DEL):
-			break;
-		case (XARP_TTL):
-			break;
-		case (XIFCONFIG_INFO):
-
-			//arp_send_response(connfd, buffer);
-			break;
-		default:{
-			//TODO: colocar informação de erro
-		}
-
-	}
-}
-
 void daemon_handle_request(char* request, int sockfd, node_t* head){
-
-	switch(atoi(request[0])){
+	int opcode = request[0] - '0';
+	switch(opcode){
 		case XARP_SHOW:
 			dup2(sockfd, STDOUT_FILENO);
 			dup2(sockfd, STDERR_FILENO);
@@ -154,8 +123,9 @@ void daemon_handle_request(char* request, int sockfd, node_t* head){
 
 		case XARP_TTL:
 			break;
-			
+
 		default:
+			printf("Caso default do daemon\n");
 			break;
 	}
 }
@@ -197,19 +167,20 @@ int main(int argc, char** argv) {
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
 
-	char c_eth_addr[6] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-	node_t* head = add_node(NULL, 100, c_eth_addr, 0); // DEBUG
+	unsigned char head_eth[6] = {0,0,0,0,0,0};
+	node_t* head = add_node(NULL, 0, head_eth, 0);
+	node_t* first_actual_node = add_node(head, 100, head_eth, 50); // DEBUG
 
 	pid_t pid;
-	int sockfd2;
+	int listen_sockfd;
 	int clilen;
-	int newsockfd2;
+	int connfd;
 	char buffer[BUFFSIZE];
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in cli_addr;
 
-	sockfd2 = socket(AF_INET, SOCK_STREAM, 0);
-	if(sockfd2 < 0) {
+	listen_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(listen_sockfd < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
 	}
@@ -220,12 +191,12 @@ int main(int argc, char** argv) {
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(PORT);
 	//man bind
-	if(bind(sockfd2, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
+	if(bind(listen_sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
 	}
 
-	if(listen(sockfd2, LISTEN_ENQ) < 0) {
+	if(listen(listen_sockfd, LISTEN_ENQ) < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
 	}
@@ -233,8 +204,8 @@ int main(int argc, char** argv) {
 	clilen = sizeof(cli_addr);
 
 	while(1) {
-		newsockfd2 = accept(sockfd2, (struct sockaddr*) &cli_addr, (unsigned int*) &clilen);
-		if(newsockfd2 < 0) {
+		connfd = accept(listen_sockfd, (struct sockaddr*) &cli_addr, (unsigned int*) &clilen);
+		if(connfd < 0) {
 			fprintf(stderr, "ERROR: %s\n", strerror(errno));
 			exit(1);
 		}
@@ -246,33 +217,26 @@ int main(int argc, char** argv) {
 		}
 
 		if(pid == 0) {
-			close(sockfd2);
+			close(listen_sockfd);
 
 			memset(buffer, 0, sizeof(buffer));
 
-			if(recv(newsockfd2, buffer, sizeof(buffer), 0) < 0) {
+			if(recv(connfd, buffer, sizeof(buffer), 0) < 0) {
 				fprintf(stderr, "ERROR: %s\n", strerror(errno));
 				exit(1);
 			}
 
 			printf("Mensagem recebida: %s\n", buffer);
 
-			daemon_handle_request(buffer, newsockfd2, head);
+			daemon_handle_request(buffer, connfd, head);
 
-			if(send(newsockfd2, "Obrigado, eu recebi a mensagem", 32, 0) < 0) {
-				fprintf(stderr, "ERROR: %s\n", strerror(errno));
-				exit(1);
-			}
-
-			close(newsockfd2);
-
-			// return 0;
+			exit(0);
 		} else {
-			close(newsockfd2);
+			close(connfd);
 		}
 	}
 
-	close(sockfd2);
+	close(listen_sockfd);
 
 	for(i = 0; i < argc-1; i++){
 		pthread_join(tid[i], NULL);
