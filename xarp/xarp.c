@@ -95,10 +95,10 @@ char* get_ttl_bytes_from_string(char* str_ttl){
   i_ttl = atoi(str_ttl);
   ttl_bytes = malloc(sizeof(char)*4);
 
-  ttl_bytes[0] = i_ttl >> 24;
-  ttl_bytes[1] = i_ttl >> 16;
-  ttl_bytes[2] = i_ttl >> 8;
-  ttl_bytes[3] = i_ttl >> 0;
+  ttl_bytes[3] = i_ttl >> 24;
+  ttl_bytes[2] = i_ttl >> 16;
+  ttl_bytes[1] = i_ttl >> 8;
+  ttl_bytes[0] = i_ttl >> 0;
 
   return ttl_bytes;
 }
@@ -193,7 +193,7 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 
-	printf("Mensagem recebida:\n%s\n", buffer);
+	printf("Received message:\n%s\n", buffer);
 
   free(message);
   return 0;

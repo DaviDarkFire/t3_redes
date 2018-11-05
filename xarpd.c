@@ -1,5 +1,7 @@
 #include "xarpd.h"
 
+int global_ttl = 60;
+
 struct iface my_ifaces[MAX_IFACES];
 //
 // Print an Ethernet address
@@ -102,31 +104,54 @@ void* read_iface(void *arg)
 	}
 }
 
-void daemon_handle_request(char* request, int sockfd, node_t* head){
+void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 	int opcode = request[0] - '0';
+	dup2(sockfd, STDOUT_FILENO);
+	dup2(sockfd, STDERR_FILENO);
+	close(sockfd);
+
 	switch(opcode){
 		case XARP_SHOW:
-			dup2(sockfd, STDOUT_FILENO);
-			dup2(sockfd, STDERR_FILENO);
-			close(sockfd);
-			print_list(head);
+			print_list(*head);
 			break;
 
 		case XARP_RES:
 			break;
 
-		case XARP_ADD:
+		case XARP_ADD:{
+			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
+			unsigned char eth_address[6];
+			memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
+			int ttl = (request[14] << 24) | (request[13] << 16) | (request[12] << 8) | (request[11]);
+			node_t* found_node = find_node_by_ip_address(*head, ip_address);
+			if(found_node == NULL){
+				printf("Node not found, adding new node\n"); // DEBUG
+				add_node(head, ip_address, eth_address, ttl);
+				print_list(*head); // DEBUG
+			}
+			else {
+				printf("Node found, modifying node\n"); // DEBUG
+				found_node->ip_address = ip_address;
+				memcpy(found_node->eth_address, eth_address, 6);
+				found_node->ttl = ttl;
+			}
+			printf("Successfull add.\n");
 			break;
+		}
 
 		case XARP_DEL:
 			break;
 
-		case XARP_TTL:
+		case XARP_TTL:{
+			int ttl = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
+			global_ttl = ttl;
+			printf("New default TTL is: %d\n", global_ttl);
 			break;
+		}
+
 
 		default:
-			printf("Caso default do daemon\n");
-			break;
+			printf("Daemon couldn't recognize this request.\n"); // DEBUG
 	}
 }
 
@@ -167,15 +192,13 @@ int main(int argc, char** argv) {
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
 
-	unsigned char head_eth[6] = {0,0,0,0,0,0};
-	node_t* head = add_node(NULL, 0, head_eth, 0);
-	node_t* first_actual_node = add_node(head, 100, head_eth, 50); // DEBUG
+	node_t* head = NULL;
 
 	pid_t pid;
 	int listen_sockfd;
 	int clilen;
 	int connfd;
-	char buffer[BUFFSIZE];
+	unsigned char buffer[BUFFSIZE];
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in cli_addr;
 
@@ -190,7 +213,7 @@ int main(int argc, char** argv) {
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
 	serv_addr.sin_port = htons(PORT);
-	//man bind
+
 	if(bind(listen_sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
 		fprintf(stderr, "ERROR: %s\n", strerror(errno));
 		exit(1);
@@ -226,9 +249,12 @@ int main(int argc, char** argv) {
 				exit(1);
 			}
 
-			printf("Mensagem recebida: %s\n", buffer);
+			printf("Received message: %s\n", buffer);
 
-			daemon_handle_request(buffer, connfd, head);
+			// if(head == NULL) printf("Head is currently NULL. \n"); //DEBUG
+			// else printf("Head is not NULL.\n"); //DEBUG
+
+			daemon_handle_request(buffer, connfd, &head);
 
 			exit(0);
 		} else {

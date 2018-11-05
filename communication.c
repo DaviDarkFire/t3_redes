@@ -140,7 +140,7 @@ char* get_ip_addr_bytes_from_string(char* dotted_dec_ip){
   ip_bytes = malloc(sizeof(char)*4);
 
   sscanf(dotted_dec_ip, "%d.%d.%d.%d",
-  &values[0], &values[1], &values[2], &values[3]);
+  &values[3], &values[2], &values[1], &values[0]);
 
   for(i = 0; i < 4; i++){
     ip_bytes[i] = (char) values[i];

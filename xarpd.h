@@ -95,5 +95,5 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn);
 void print_usage();
 void doProcess(unsigned char* packet, int len);
 void* read_iface(void *arg);
-void daemon_handle_request(char* request, int sockfd, node_t* head);
+void daemon_handle_request(unsigned char* request, int sockfd, node_t** head);
 #endif

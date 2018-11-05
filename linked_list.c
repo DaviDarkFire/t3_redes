@@ -1,18 +1,29 @@
 #include "linked_list.h"
 
-node_t* add_node(node_t* current_last_node, unsigned int ip_address, unsigned char eth_address[6], int ttl){
+// adds node to the end of the list
+node_t* add_node(node_t** head, unsigned int ip_address, unsigned char eth_address[6], int ttl){
     node_t* new_node;
     new_node = (node_t*) malloc(sizeof(node_t));
     new_node->ip_address = ip_address;
     memcpy(new_node->eth_address, eth_address, 6);
     new_node->ttl = ttl;
     new_node->next = NULL;
-    if(current_last_node != NULL)
-        current_last_node->next = new_node;
+
+    if (*head == NULL){
+      *head = new_node;
+      return new_node;
+    } // creating the head
+
+    node_t* current = *head;
+    while(current->next != NULL){
+      current = current->next;
+    }
+
+    current->next = new_node;
     return new_node;
 }
 
-int delete_node_by_ip_address(node_t** head, int del_ip_addr){
+int delete_node_by_ip_address(node_t** head, unsigned int del_ip_addr){
   int retval = -1;
   node_t* current = *head;
   node_t* previous = NULL;
@@ -41,8 +52,8 @@ int delete_node_by_ip_address(node_t** head, int del_ip_addr){
   return retval;
 }
 
-void /*char**/ print_list(node_t * head){
-  node_t * current = head->next;
+void print_list(node_t * head){
+  node_t * current = head;
   struct in_addr ip_addr;
   int i;
   printf("Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
@@ -82,7 +93,7 @@ void get_eth_addr_as_6_bytes_from_string(unsigned char dest_array[6], char* src_
 }
 
 // returns desired node if it exists in the list, otherwise, returns NULL (be careful!)
-node_t* find_node_by_ip_address(node_t* head, int desired_ip_addr){
+node_t* find_node_by_ip_address(node_t* head, unsigned int desired_ip_addr){
     node_t* current = head;
     while(current != NULL){
       if(current->ip_address == desired_ip_addr)
