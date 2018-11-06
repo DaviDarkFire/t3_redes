@@ -155,7 +155,7 @@ int main(int argc, char** argv){
 	char buffer[BUFFSIZE];
 	struct sockaddr_in serv_addr;
 
-  sprintf(buffer, "%s\0", message);
+  sprintf(buffer, "%s", message);
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -186,6 +186,7 @@ int main(int argc, char** argv){
   do{
       bytes_received = recv(sockfd, buffer+total_bytes_received, BUFFSIZE-total_bytes_received, 0);
 			total_bytes_received += bytes_received;
+      printf("Bytes received na xarp: %d\n", bytes_received); // DEBUG
 	}while(bytes_received > 0);
 
 	if(bytes_received < 0) {

@@ -24,17 +24,18 @@ node_t* add_node(node_t** head, unsigned int ip_address, unsigned char eth_addre
 }
 
 int delete_node_by_ip_address(node_t** head, unsigned int del_ip_addr){
-  int retval = -1;
+  // int retval = -1;
   node_t* current = *head;
   node_t* previous = NULL;
 
   //exclusão da head
   if(del_ip_addr == (*head)->ip_address){
-    retval = del_ip_addr;
+    // retval = del_ip_addr;
     node_t* aux = *head;
     *head = (*head)->next;
     free(aux);
-    return retval;
+    // return retval;
+    return 1;
   }
 
   while(1){
@@ -47,9 +48,10 @@ int delete_node_by_ip_address(node_t** head, unsigned int del_ip_addr){
   }
   if(previous != NULL)
     previous->next = current->next;
-  retval = current->ip_address;
+  // retval = current->ip_address;
   free(current);
-  return retval;
+  // return retval;
+  return 1;
 }
 
 void print_list(node_t * head){

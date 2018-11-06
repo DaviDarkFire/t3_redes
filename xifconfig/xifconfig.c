@@ -69,15 +69,26 @@ char* build_xifconfig_ip_message(char** args){
   printBits(sizeof(ip_bytes), ip_bytes); // DEBUG
   printBits(sizeof(netmask), netmask); // DEBUG
 
+  // printf("strlen(args[1]): %d\n", (int)strlen(args[1])); // DEBUG
+  // char stuffed_ifname[6];
+  // int i;
+  // for(i = 0; i < 6; i++){
+  //   if(i < strlen(args[1]))
+  //     stuffed_ifname[i] = args[1][i];
+  //   else
+  //     stuffed_ifname[i] = '$';
+  // }
+  // printf("stuffed_ifname: %s", stuffed_ifname); // DEBUG
+
   sprintf(opcode, "%d", XIFCONFIG_IP);
   memcpy(message, opcode, sizeof(char)); // opcode
-  memcpy(message+1, args[1], MAX_IFNAME_LEN); // ifname
-  memcpy(message+1+22, ip_bytes, 4);
-  memcpy(message+1+22+4, netmask, 4);
+  memcpy(message+1, args[1]/*stuffed_ifname*/, 6); // ifname
+  memcpy(message+1+6, ip_bytes, 4);
+  memcpy(message+1+6+4, netmask, 4);
 
   free(ip_bytes);
   free(netmask);
-
+  printf("message na build build_xifconfig_ip_message: %s\n", message); // DEBUG
   return message;
 }
 

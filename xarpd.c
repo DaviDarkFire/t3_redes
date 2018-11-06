@@ -69,7 +69,7 @@ void doProcess(unsigned char* packet, int len) {
 	struct ether_hdr* eth = (struct ether_hdr*) packet;
 
 	if(htons(0x0806) == eth->ether_type) { // ARP
-
+		
 	}
 	// Ignore if it is not an ARP packet
 }
@@ -108,8 +108,9 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 	int opcode = request[0] - '0';
 	dup2(sockfd, STDOUT_FILENO);
 	dup2(sockfd, STDERR_FILENO);
-	close(sockfd);
+	// close(sockfd);
 
+	printf("entered daemon_handle_request\n");// DEBUG
 	switch(opcode){
 		case XARP_SHOW:
 			print_list(*head);
@@ -139,8 +140,15 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 			break;
 		}
 
-		case XARP_DEL:
+		case XARP_DEL:{
+			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
+			if(delete_node_by_ip_address(head, ip_address) == 1)
+			  printf("Node deleted succesfully.\n");
+			else
+				printf("Couldn't delete node.\n");
 			break;
+		}
+
 
 		case XARP_TTL:{
 			int ttl = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
@@ -194,7 +202,7 @@ int main(int argc, char** argv) {
 
 	node_t* head = NULL;
 
-	pid_t pid;
+	// pid_t pid;
 	int listen_sockfd;
 	int clilen;
 	int connfd;
@@ -229,18 +237,19 @@ int main(int argc, char** argv) {
 	while(1) {
 		connfd = accept(listen_sockfd, (struct sockaddr*) &cli_addr, (unsigned int*) &clilen);
 		if(connfd < 0) {
+			printf("Erro no if do accept\n"); // DEBUG
 			fprintf(stderr, "ERROR: %s\n", strerror(errno));
 			exit(1);
 		}
 
-		pid = fork();
-		if(pid < 0) {
-			fprintf(stderr, "ERROR: %s\n", strerror(errno));
-			exit(1);
-		}
-
-		if(pid == 0) {
-			close(listen_sockfd);
+		// pid = fork();
+		// if(pid < 0) {
+		// 	fprintf(stderr, "ERROR: %s\n", strerror(errno));
+		// 	exit(1);
+		// }
+		//
+		// if(pid == 0) {
+			// close(listen_sockfd);
 
 			memset(buffer, 0, sizeof(buffer));
 
@@ -256,13 +265,13 @@ int main(int argc, char** argv) {
 
 			daemon_handle_request(buffer, connfd, &head);
 
-			exit(0);
-		} else {
+			exit(0); // TODO: como me livrar desse exit e fazer o programa rodar tudo?
+		// } else {
 			close(connfd);
-		}
+		// }
 	}
 
-	close(listen_sockfd);
+	// close(listen_sockfd);
 
 	for(i = 0; i < argc-1; i++){
 		pthread_join(tid[i], NULL);

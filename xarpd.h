@@ -23,7 +23,7 @@
 	#define MIN_PACKET_SIZE 64
 	/* */
 	#define MAX_IFACES	64
-	#define MAX_IFNAME_LEN	22
+	#define MAX_IFNAME_LEN	6
 	#define ETH_ADDR_LEN	6
 
 	#define BUFFSIZE 1024
@@ -81,7 +81,7 @@ struct arp_hdr{
 	unsigned int sender_ip_addr;
 	unsigned char sender_hw_addr[6];
 	unsigned int sender_proto_addr;
-	unsigned char target_hw_addr;
+	unsigned char target_hw_addr[6];
 	unsigned int target_proto_addr;
 };
 /* */
