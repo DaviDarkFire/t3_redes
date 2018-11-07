@@ -25,6 +25,7 @@
 	#define MAX_IFACES	64
 	#define MAX_IFNAME_LEN	6
 	#define ETH_ADDR_LEN	6
+	#define IP_ADDR_LEN 4
 
 	#define BUFFSIZE 1024
 	#define LISTEN_ENQ 5
@@ -90,7 +91,7 @@ struct arp_hdr{
 //
 
 void print_eth_address(char *s, unsigned char *eth_addr);
-void print_iface_info(unsigned int iface_index);
+void print_iface_info(int sockfd, unsigned int iface_index);
 int bind_iface_name(int fd, char *iface_name);
 void get_iface_info(int sockfd, char *ifname, struct iface *ifn);
 void print_usage();

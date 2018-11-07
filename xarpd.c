@@ -10,8 +10,24 @@ void print_eth_address(char *s, unsigned char *eth_addr)
 	       eth_addr[3], eth_addr[4], eth_addr[5]);
 }
 
-void print_iface_info(unsigned int iface_index){
+void print_iface_info(int sockfd, unsigned int iface_index){
 	struct sockaddr_in sa_ip, sa_bcast, sa_mask;
+	// struct ifreq ifr;
+	// char* ip_address;
+	// char* bcast_address;
+	// char* netmask;
+
+	// ifr.ifr_addr.sa_family = AF_INET;
+	// strncpy(ifr.ifr_name, my_ifaces[iface_index].ifname, IFNAMSIZ-1);
+	// ioctl(sockfd, SIOCGIFADDR, &ifr);
+	// ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+	//
+	// ioctl(sockfd, SIOCGIFBRDADDR, &ifr);
+	// bcast_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_broadaddr)->sin_addr);
+	//
+	// ioctl(sockfd, SIOCGIFNETMASK, &ifr);
+	// netmask = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr);
+
 	sa_ip.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].ip_addr;
 	sa_bcast.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].bcast_addr;
 	sa_mask.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].netmask;
@@ -28,6 +44,7 @@ void print_iface_info(unsigned int iface_index){
 	printf("\tinet end.:%s Bcast:%s Masc: %s\n",
 	inet_ntoa(sa_ip.sin_addr), inet_ntoa(sa_bcast.sin_addr),
 	inet_ntoa(sa_mask.sin_addr));
+	// ip_address, bcast_address, netmask);
 
 	printf("\tUP MTU: %d\n", my_ifaces[iface_index].mtu);
 
@@ -52,17 +69,42 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 
 	strcpy(s.ifr_name, ifname);
 	// Getting HW address
-	if (0 == ioctl(sockfd, SIOCGIFHWADDR, &s)) {
+	if(0 == ioctl(sockfd, SIOCGIFHWADDR, &s)){
 		memcpy(ifn->mac_addr, s.ifr_addr.sa_data, ETH_ADDR_LEN);
 		ifn->sockfd = sockfd;
 		strcpy(ifn->ifname, ifname);
 	} else {
-		perror("Error getting MAC address");
+		perror("Error getting MAC address\n");
 		exit(1);
 	}
 
-	// Getting IP address
-	// if(0 == ioctl(sockfd, ,&s)){}
+	// Getting MTU value
+	if (0 ==ioctl(sockfd, SIOCGIFMTU, &s)) {
+		ifn->mtu = s.ifr_mtu;
+	} else {
+		perror("Error getting MTU value\n");
+		exit(1);
+	}
+
+	//
+	// // Getting IP address
+	// if(0 == ioctl(sockfd, SIOCGIFADDR, &s)){
+	// 	// memcpy(ifn->ip_addr, s.ifr_addr.sa_data, IP_ADDR_LEN);
+	// 	ifn->ip_addr = (s.ifr_addr.sa_data[0] << 24) | (s.ifr_addr.sa_data[1] << 16) |
+	// 	 (s.ifr_addr.sa_data[2] << 8) | (s.ifr_addr.sa_data[3]);
+	// } else {
+	// 	perror("Error getting IP address");
+	// 	exit(1);
+	// }
+	//
+	// if(0 == ioctl(sockfd, SIOCGIFADDR, &s)){
+	// 	// memcpy(ifn->bcast_addr, s.ifr_brdaddr.sa_data, IP_ADDR_LEN);
+	// 	ifn->bcast_addr = (s.ifr_broadaddr.sa_data[3] << 24) | (s.ifr_broadaddr.sa_data[2] << 16) |
+	// 	 (s.ifr_broadaddr.sa_data[1] << 8) | (s.ifr_broadaddr.sa_data[0]);
+	// } else {
+	// 	perror("Error getting broadcast address");
+	// 	exit(1);
+	// }
 
 }
 // Print the expected command line for the program
@@ -147,7 +189,7 @@ int main(int argc, char** argv) {
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 		pthread_create(&(tid[i]), &attr, read_iface, &my_ifaces[i]);
-		print_iface_info(i);
+		print_iface_info(sockfd, i);
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
 
