@@ -1,37 +1,43 @@
 #include "xarpd.h"
 
-int global_ttl = 60;
-
-struct iface my_ifaces[MAX_IFACES];
+struct iface	my_ifaces[MAX_IFACES];
 //
 // Print an Ethernet address
-void print_eth_address(char *s, unsigned char *eth_addr){
+void print_eth_address(char *s, unsigned char *eth_addr)
+{
 	printf("%s %02X:%02X:%02X:%02X:%02X:%02X", s,
 	       eth_addr[0], eth_addr[1], eth_addr[2],
 	       eth_addr[3], eth_addr[4], eth_addr[5]);
 }
 
 void print_iface_info(unsigned int iface_index){
-	struct sockaddr_in sa;
-	sa.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].ip_addr;
+	struct sockaddr_in sa_ip, sa_bcast, sa_mask;
+	sa_ip.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].ip_addr;
+	sa_bcast.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].bcast_addr;
+	sa_mask.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].netmask;
 
-	printf("sockfd: %d\n",my_ifaces[iface_index].sockfd);
-	printf("ttl: %d\n", my_ifaces[iface_index].ttl);
-	printf("mtu: %d\n", my_ifaces[iface_index].mtu);
-	printf("ifname: %s\n", my_ifaces[iface_index].ifname);
-	printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n",
+	printf("%s Link encap: Endereço de HW %02X:%02X:%02X:%02X:%02X:%02X\n",
+	my_ifaces[iface_index].ifname,
 	my_ifaces[iface_index].mac_addr[0],
- 	my_ifaces[iface_index].mac_addr[1],
+	my_ifaces[iface_index].mac_addr[1],
 	my_ifaces[iface_index].mac_addr[2],
 	my_ifaces[iface_index].mac_addr[3],
 	my_ifaces[iface_index].mac_addr[4],
 	my_ifaces[iface_index].mac_addr[5]);
-	printf("IP: %s\n", inet_ntoa(sa.sin_addr));
-	printf("RX packets: %d\n", my_ifaces[iface_index].rx_pkts);
-	printf("RX bytes: %d\n", my_ifaces[iface_index].rx_bytes);
-	printf("TX packets: %d\n", my_ifaces[iface_index].tx_pkts);
-	printf("TX bytes: %d\n", my_ifaces[iface_index].tx_bytes);
 
+	printf("\tinet end.:%s Bcast:%s Masc: %s\n",
+	inet_ntoa(sa_ip.sin_addr), inet_ntoa(sa_bcast.sin_addr),
+	inet_ntoa(sa_mask.sin_addr));
+
+	printf("\tUP MTU: %d\n", my_ifaces[iface_index].mtu);
+
+	printf("\tRX packets:%u TX packets:%u\n",
+	my_ifaces[iface_index].rx_pkts,
+	my_ifaces[iface_index].tx_pkts);
+
+	printf("\tRX bytes:%u TX bytes:%u\n",
+	my_ifaces[iface_index].rx_bytes,
+	my_ifaces[iface_index].tx_bytes);
 }
 /* */
 // Bind a socket to an interface
@@ -45,6 +51,7 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 	struct ifreq s;
 
 	strcpy(s.ifr_name, ifname);
+	// Getting HW address
 	if (0 == ioctl(sockfd, SIOCGIFHWADDR, &s)) {
 		memcpy(ifn->mac_addr, s.ifr_addr.sa_data, ETH_ADDR_LEN);
 		ifn->sockfd = sockfd;
@@ -53,6 +60,10 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 		perror("Error getting MAC address");
 		exit(1);
 	}
+
+	// Getting IP address
+	// if(0 == ioctl(sockfd, ,&s)){}
+
 }
 // Print the expected command line for the program
 void print_usage()
@@ -103,65 +114,6 @@ void* read_iface(void *arg)
 		// free(arg);
 	}
 }
-
-void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
-	int opcode = request[0] - '0';
-	dup2(sockfd, STDOUT_FILENO);
-	dup2(sockfd, STDERR_FILENO);
-	close(sockfd);
-
-	switch(opcode){
-		case XARP_SHOW:
-			print_list(*head);
-			break;
-
-		case XARP_RES:
-			break;
-
-		case XARP_ADD:{
-			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
-			unsigned char eth_address[6];
-			memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
-			int ttl = (request[14] << 24) | (request[13] << 16) | (request[12] << 8) | (request[11]);
-			node_t* found_node = find_node_by_ip_address(*head, ip_address);
-			if(found_node == NULL){
-				printf("Node not found, adding new node\n"); // DEBUG
-				add_node(head, ip_address, eth_address, ttl);
-				print_list(*head); // DEBUG
-			}
-			else {
-				printf("Node found, modifying node\n"); // DEBUG
-				found_node->ip_address = ip_address;
-				memcpy(found_node->eth_address, eth_address, 6);
-				found_node->ttl = ttl;
-			}
-			printf("Successfull add.\n");
-			break;
-		}
-
-		case XARP_DEL:{
-			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
-			if(delete_node_by_ip_address(head, ip_address) == 1)
-			  printf("Node deleted succesfully.\n");
-			else
-				printf("Couldn't delete node.\n");
-			break;
-		}
-
-
-		case XARP_TTL:{
-			int ttl = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
-			global_ttl = ttl;
-			printf("New default TTL is: %d\n", global_ttl);
-			break;
-		}
-
-
-		default:
-			printf("Daemon couldn't recognize this request.\n"); // DEBUG
-	}
-}
-
 /* */
 // main function
 int main(int argc, char** argv) {
@@ -195,86 +147,15 @@ int main(int argc, char** argv) {
 		pthread_attr_t attr;
 		pthread_attr_init(&attr);
 		pthread_create(&(tid[i]), &attr, read_iface, &my_ifaces[i]);
-		// print_iface_info(i); // DEBUG
+		print_iface_info(i);
 		// Create one thread for each interface. Each thread should run the function read_iface.
 	}
-
-	node_t* head = NULL;
-
-	// pid_t pid;
-	int listen_sockfd;
-	int clilen;
-	int connfd;
-	unsigned char buffer[BUFFSIZE];
-	struct sockaddr_in serv_addr;
-	struct sockaddr_in cli_addr;
-
-	listen_sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if(listen_sockfd < 0) {
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
-
-	memset((char*) &serv_addr, 0, sizeof(serv_addr));
-
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = INADDR_ANY;
-	serv_addr.sin_port = htons(PORT);
-
-	if(bind(listen_sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0) {
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
-
-	if(listen(listen_sockfd, LISTEN_ENQ) < 0) {
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
-
-	clilen = sizeof(cli_addr);
-
-	while(1) {
-		connfd = accept(listen_sockfd, (struct sockaddr*) &cli_addr, (unsigned int*) &clilen);
-		if(connfd < 0) {
-			printf("Erro no if do accept\n"); // DEBUG
-			fprintf(stderr, "ERROR: %s\n", strerror(errno));
-			exit(1);
-		}
-
-		// pid = fork();
-		// if(pid < 0) {
-		// 	fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		// 	exit(1);
-		// }
-		//
-		// if(pid == 0) {
-			// close(listen_sockfd);
-
-			memset(buffer, 0, sizeof(buffer));
-
-			if(recv(connfd, buffer, sizeof(buffer), 0) < 0) {
-				fprintf(stderr, "ERROR: %s\n", strerror(errno));
-				exit(1);
-			}
-
-			printf("Received message: %s\n", buffer);
-
-			// if(head == NULL) printf("Head is currently NULL. \n"); //DEBUG
-			// else printf("Head is not NULL.\n"); //DEBUG
-
-			daemon_handle_request(buffer, connfd, &head);
-
-			// exit(0); // TODO: como me livrar desse exit e fazer o programa rodar tudo?
-		// } else {
-			close(connfd);
-		// }
-	}
-
-	// close(listen_sockfd);
 
 	for(i = 0; i < argc-1; i++){
 		pthread_join(tid[i], NULL);
 	}
+
+	//TODO: colocar aqui a execução da thread principal que fica escutando request dos programas auxiliares
 
 	return 0;
 }

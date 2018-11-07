@@ -37,6 +37,7 @@ struct iface {
 	char		ifname[MAX_IFNAME_LEN];
 	unsigned char	mac_addr[6];
 	unsigned int	ip_addr;
+	unsigned int bcast_addr;
 	unsigned int netmask;
 	unsigned int	rx_pkts;
 	unsigned int	rx_bytes;
