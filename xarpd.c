@@ -69,7 +69,7 @@ void doProcess(unsigned char* packet, int len) {
 	struct ether_hdr* eth = (struct ether_hdr*) packet;
 
 	if(htons(0x0806) == eth->ether_type) { // ARP
-		
+
 	}
 	// Ignore if it is not an ARP packet
 }
@@ -108,9 +108,8 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 	int opcode = request[0] - '0';
 	dup2(sockfd, STDOUT_FILENO);
 	dup2(sockfd, STDERR_FILENO);
-	// close(sockfd);
+	close(sockfd);
 
-	printf("entered daemon_handle_request\n");// DEBUG
 	switch(opcode){
 		case XARP_SHOW:
 			print_list(*head);
@@ -265,7 +264,7 @@ int main(int argc, char** argv) {
 
 			daemon_handle_request(buffer, connfd, &head);
 
-			exit(0); // TODO: como me livrar desse exit e fazer o programa rodar tudo?
+			// exit(0); // TODO: como me livrar desse exit e fazer o programa rodar tudo?
 		// } else {
 			close(connfd);
 		// }

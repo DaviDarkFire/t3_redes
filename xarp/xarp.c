@@ -185,14 +185,14 @@ int main(int argc, char** argv){
   total_bytes_received = 0;
   do{
       bytes_received = recv(sockfd, buffer+total_bytes_received, BUFFSIZE-total_bytes_received, 0);
+      if(bytes_received < 0) {
+    		fprintf(stderr, "ERROR: %s\n", strerror(errno));
+    		exit(1);
+    	}
 			total_bytes_received += bytes_received;
+      printf("Os bytes recebidos até agora foram:\n%s\n", buffer); // DEBUG
       printf("Bytes received na xarp: %d\n", bytes_received); // DEBUG
 	}while(bytes_received > 0);
-
-	if(bytes_received < 0) {
-		fprintf(stderr, "ERROR: %s\n", strerror(errno));
-		exit(1);
-	}
 
 	printf("Received message:\n%s\n", buffer);
 
