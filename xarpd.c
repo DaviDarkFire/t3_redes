@@ -124,28 +124,28 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 			node_t* found_node = find_node_by_ip_address(*head, ip_address);
 
 			if(found_node == NULL){
-				printf("Node not found, adding new node\n"); // DEBUG
+				fprintf(fp, "Node not found, adding new node\n"); // DEBUG
 				if(ttl == -1)
 					add_node(head, ip_address, eth_address, global_ttl);
 				else
 					add_node(head, ip_address, eth_address, ttl);
 				// print_list(*head, fp); // DEBUG
 			} else {
-				printf("Node found, modifying node\n"); // DEBUG
+				fprintf(fp, "Node found, modifying node\n"); // DEBUG
 				found_node->ip_address = ip_address;
 				memcpy(found_node->eth_address, eth_address, 6);
-				found_node->ttl = ttl;
+				found_node->ttl = (ttl == -1 ? global_ttl : ttl);
 			}
-			printf("Successfull add.\n");
+			fprintf(fp, "Successfull add.\n"); // DEBUG
 			break;
 		}
 
 		case XARP_DEL:{
 			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 			if(delete_node_by_ip_address(head, ip_address) == 1)
-			  printf("Node deleted succesfully.\n");
+			  fprintf(fp, "Node deleted succesfully.\n"); // DEBUG
 			else
-				printf("Couldn't delete node.\n");
+				fprintf(fp, "Couldn't delete node.\n"); // DEBUG
 			break;
 		}
 
@@ -153,13 +153,13 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 		case XARP_TTL:{
 			int ttl = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 			global_ttl = ttl;
-			printf("New default TTL is: %d\n", global_ttl);
+			fprintf(fp, "New default TTL is: %d\n", global_ttl);
 			break;
 		}
 
 
 		default:
-			printf("Daemon couldn't recognize this request.\n"); // DEBUG
+			fprintf(fp, "Daemon couldn't recognize this request.\n"); // DEBUG
 	}
 	fclose(fp);
 }
