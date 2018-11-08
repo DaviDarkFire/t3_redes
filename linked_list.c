@@ -54,11 +54,10 @@ int delete_node_by_ip_address(node_t** head, unsigned int del_ip_addr){
   return 1;
 }
 
-void print_list(node_t * head, int sockfd){
+void print_list(node_t * head, FILE* fp){
   node_t * current = head;
   struct in_addr ip_addr;
   int i;
-  FILE * fp = fdopen(sockfd, "w");
   fprintf(fp ,"Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
 
   for(i = 0; current != NULL; i++){
@@ -70,7 +69,6 @@ void print_list(node_t * head, int sockfd){
     current->eth_address[5], current->ttl);
     current = current->next;
   }
-  fclose(fp);
 }
 
 int list_size(node_t * head){

@@ -106,10 +106,11 @@ void* read_iface(void *arg)
 
 void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 	int opcode = request[0] - '0';
+	FILE * fp = fdopen(sockfd, "w");
 
 	switch(opcode){
 		case XARP_SHOW:
-			print_list(*head, sockfd);
+			print_list(*head, fp);
 			break;
 
 		case XARP_RES:
@@ -121,12 +122,15 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 			memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
 			int ttl = (request[14] << 24) | (request[13] << 16) | (request[12] << 8) | (request[11]);
 			node_t* found_node = find_node_by_ip_address(*head, ip_address);
+
 			if(found_node == NULL){
 				printf("Node not found, adding new node\n"); // DEBUG
-				add_node(head, ip_address, eth_address, ttl);
-				print_list(*head, sockfd); // DEBUG
-			}
-			else {
+				if(ttl == -1)
+					add_node(head, ip_address, eth_address, global_ttl);
+				else
+					add_node(head, ip_address, eth_address, ttl);
+				// print_list(*head, fp); // DEBUG
+			} else {
 				printf("Node found, modifying node\n"); // DEBUG
 				found_node->ip_address = ip_address;
 				memcpy(found_node->eth_address, eth_address, 6);
@@ -157,6 +161,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 		default:
 			printf("Daemon couldn't recognize this request.\n"); // DEBUG
 	}
+	fclose(fp);
 }
 
 /* */
