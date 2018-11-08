@@ -190,11 +190,11 @@ int main(int argc, char** argv){
     		exit(1);
     	}
 			total_bytes_received += bytes_received;
-      printf("Os bytes recebidos até agora foram:\n%s\n", buffer); // DEBUG
-      printf("Bytes received na xarp: %d\n", bytes_received); // DEBUG
+      // printf("Os bytes recebidos até foram: \n%s\n", buffer); // DEBUG
+      // printf("Bytes received na xarp: %d\n", bytes_received); // DEBUG
 	}while(bytes_received > 0);
 
-	printf("Received message:\n%s\n", buffer);
+	printf("\n%s\n", buffer);
 
   free(message);
   return 0;
