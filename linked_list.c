@@ -54,21 +54,23 @@ int delete_node_by_ip_address(node_t** head, unsigned int del_ip_addr){
   return 1;
 }
 
-void print_list(node_t * head){
+void print_list(node_t * head, int sockfd){
   node_t * current = head;
   struct in_addr ip_addr;
   int i;
-  printf("Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
+  FILE * fp = fdopen(sockfd, "w");
+  fprintf(fp ,"Entrada\t\tEndereço IP\t\tEndereço Ethernet\t\tTTL\n");
 
   for(i = 0; current != NULL; i++){
     ip_addr.s_addr = (uint32_t) ntohl(current->ip_address);
 
-    printf("%d\t\t%s\t\t%02X:%02X:%02X:%02X:%02X:%02X\t\t%d\n",
+    fprintf(fp ,"%d\t\t%s\t\t%02X:%02X:%02X:%02X:%02X:%02X\t\t%d\n",
     i, inet_ntoa(ip_addr), current->eth_address[0], current->eth_address[1],
     current->eth_address[2], current->eth_address[3], current->eth_address[4],
     current->eth_address[5], current->ttl);
     current = current->next;
   }
+  fclose(fp);
 }
 
 int list_size(node_t * head){

@@ -106,13 +106,13 @@ void* read_iface(void *arg)
 
 void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 	int opcode = request[0] - '0';
-	dup2(sockfd, STDOUT_FILENO);
-	dup2(sockfd, STDERR_FILENO);
-	close(sockfd);
+	//dup2(sockfd, STDOUT_FILENO);
+	//dup2(sockfd, STDERR_FILENO);
+	// close(sockfd);
 
 	switch(opcode){
 		case XARP_SHOW:
-			print_list(*head);
+			print_list(*head, sockfd);
 			break;
 
 		case XARP_RES:
@@ -127,7 +127,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 			if(found_node == NULL){
 				printf("Node not found, adding new node\n"); // DEBUG
 				add_node(head, ip_address, eth_address, ttl);
-				print_list(*head); // DEBUG
+				print_list(*head, sockfd); // DEBUG
 			}
 			else {
 				printf("Node found, modifying node\n"); // DEBUG
@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
 
 			// exit(0); // TODO: como me livrar desse exit e fazer o programa rodar tudo?
 		// } else {
-			close(connfd);
+			//close(connfd);
 		// }
 	}
 
