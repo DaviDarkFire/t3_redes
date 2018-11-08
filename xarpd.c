@@ -104,7 +104,7 @@ void* read_iface(void *arg)
 	}
 }
 
-void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
+void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, unsigned int qt_ifaces){
 	int opcode = request[0] - '0';
 	FILE * fp = fdopen(sockfd, "w");
 
@@ -149,7 +149,6 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 			break;
 		}
 
-
 		case XARP_TTL:{
 			int ttl = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 			global_ttl = ttl;
@@ -157,6 +156,21 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head){
 			break;
 		}
 
+		case XIFCONFIG_INFO:{
+			unsigned int i;
+			for(i = 0; i < qt_ifaces; i++){
+				print_iface_info(i);
+			}
+			break;
+		}
+
+		case XIFCONFIG_IP:{
+			break;
+		}
+
+		case XIFCONFIG_MTU:{
+			break;
+		}
 
 		default:
 			fprintf(fp, "Daemon couldn't recognize this request.\n"); // DEBUG
@@ -251,7 +265,7 @@ int main(int argc, char** argv) {
 
 		printf("Received message: %s\n", buffer);
 
-		daemon_handle_request(buffer, connfd, &head);
+		daemon_handle_request(buffer, connfd, &head, argc-1);
 	}
 
 	for(i = 0; i < argc-1; i++){
