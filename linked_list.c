@@ -28,29 +28,29 @@ int delete_node_by_ip_address(node_t** head, unsigned int del_ip_addr){
   node_t* current = *head;
   node_t* previous = NULL;
 
-  //exclusão da head
+  // no nodes in the list
+  if(*head == NULL)
+    return -1;
+
+  // deleting head
   if(del_ip_addr == (*head)->ip_address){
-    // retval = del_ip_addr;
     node_t* aux = *head;
     *head = (*head)->next;
     free(aux);
-    // return retval;
     return 1;
   }
 
   while(1){
-    if(current == NULL)
-      return -1;
     if(current->ip_address == del_ip_addr) // current is the node we'll delete
       break;
+    if(current->next == NULL)
+      return -1;
     previous = current;
     current = current->next;
   }
   if(previous != NULL)
     previous->next = current->next;
-  // retval = current->ip_address;
   free(current);
-  // return retval;
   return 1;
 }
 
