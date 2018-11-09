@@ -1,14 +1,15 @@
 #ifndef __XARPD__
 #define __XARPD__
-	#include <errno.h>
-	#include <stdio.h>
+	#include <arpa/inet.h>
+	#include <sys/socket.h>
 	#include <netdb.h>
+	#include <ifaddrs.h>
+	#include <stdio.h>
 	#include <stdlib.h>
 	#include <unistd.h>
 	#include <string.h>
+	#include <errno.h>
 	#include <sys/types.h>
-	#include <arpa/inet.h>
-	#include <sys/socket.h>
 	#include <netinet/in.h>
 	#include <net/ethernet.h>
 	#include <sys/ioctl.h>
@@ -38,6 +39,7 @@ struct iface {
 	unsigned char	mac_addr[6];
 	unsigned int	ip_addr;
 	unsigned int netmask;
+	unsigned int bcast_addr;
 	unsigned int	rx_pkts;
 	unsigned int	rx_bytes;
 	unsigned int	tx_pkts;
@@ -89,11 +91,14 @@ struct arp_hdr{
 //
 
 void print_eth_address(char *s, unsigned char *eth_addr);
-void print_iface_info(unsigned int iface_index);
+void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index);
 int bind_iface_name(int fd, char *iface_name);
 void get_iface_info(int sockfd, char *ifname, struct iface *ifn);
 void print_usage();
 void doProcess(unsigned char* packet, int len);
 void* read_iface(void *arg);
 void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, unsigned int qt_ifaces);
+char* get_ip_address(unsigned int iface_index);
+// void get_netmask_address(unsigned int iface_index);
+// void get_bcast_address(unsigned int iface_index);
 #endif

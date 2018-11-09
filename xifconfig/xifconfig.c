@@ -54,41 +54,24 @@ char* build_xifconfig_info_message(){
 char* build_xifconfig_ip_message(char** args){
   char* message;
   char opcode[1];
-  char* ip_bytes;
-  char* netmask;
-
-  message = malloc(sizeof(char)*31); // 1 + 22 + 4 + 4
-  ip_bytes = get_ip_addr_bytes_from_string(args[2]);
-  netmask = get_ip_addr_bytes_from_string(args[3]); // netmask is in the same format as an ip address
-
-  printf("args[2] na build: %s\n", args[2]); // DEBUG
-  printf("args[3] na build: %s\n", args[3]); // DEBUG
-  printf("ip_bytes na build: %s\n", ip_bytes); // DEBUG
-  printf("netmask na build: %s\n", netmask); // DEBUG
-
-  printBits(sizeof(ip_bytes), ip_bytes); // DEBUG
-  printBits(sizeof(netmask), netmask); // DEBUG
-
-  // printf("strlen(args[1]): %d\n", (int)strlen(args[1])); // DEBUG
-  // char stuffed_ifname[6];
-  // int i;
-  // for(i = 0; i < 6; i++){
-  //   if(i < strlen(args[1]))
-  //     stuffed_ifname[i] = args[1][i];
-  //   else
-  //     stuffed_ifname[i] = '$';
-  // }
-  // printf("stuffed_ifname: %s", stuffed_ifname); // DEBUG
-
+  int ifname_len = (int) strlen(args[1]);
+  message = malloc(sizeof(char)*(1+ifname_len+4+4));
   sprintf(opcode, "%d", XIFCONFIG_IP);
   memcpy(message, opcode, sizeof(char)); // opcode
-  memcpy(message+1, args[1]/*stuffed_ifname*/, 6); // ifname
-  memcpy(message+1+6, ip_bytes, 4);
-  memcpy(message+1+6+4, netmask, 4);
-
-  free(ip_bytes);
-  free(netmask);
+  memcpy(message+1, args[1], (size_t) ifname_len); // ifname
   printf("message na build build_xifconfig_ip_message: %s\n", message); // DEBUG
+  return message;
+}
+
+char* build_xifconfig_mtu_message(char** args){
+  int ifname_len = (int) strlen(args[1]);
+  char* message = malloc(sizeof(char)*(1+ifname_len));
+  char opcode[1];
+  sprintf(opcode, "%d", XIFCONFIG_MTU);
+  memcpy(message, opcode, sizeof(char));
+  memcpy(message+1, args[1], (size_t) ifname_len);
+  printf("message na build_xifconfig_mtu_message: %s\n", message); // DEBUG
+
   return message;
 }
 
@@ -110,6 +93,7 @@ int main(int argc, char** argv){
     break;
 
     case SET_MTU_MODE:
+      message = build_xifconfig_mtu_message(argv);
       printf("You chose MTU mode.\n"); //DEBUG
       set_mtu_mode(argv[1], argv[3]);
     break;

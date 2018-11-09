@@ -1,5 +1,6 @@
 #include "xarpd.h"
 
+
 int global_ttl = 60;
 
 struct iface my_ifaces[MAX_IFACES];
@@ -11,27 +12,44 @@ void print_eth_address(char *s, unsigned char *eth_addr){
 	       eth_addr[3], eth_addr[4], eth_addr[5]);
 }
 
-void print_iface_info(unsigned int iface_index){
-	struct sockaddr_in sa;
-	sa.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].ip_addr;
+void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
+	// struct sockaddr_in sa_ip, sa_bcast, sa_mask;
 
-	printf("sockfd: %d\n",my_ifaces[iface_index].sockfd);
-	printf("ttl: %d\n", my_ifaces[iface_index].ttl);
-	printf("mtu: %d\n", my_ifaces[iface_index].mtu);
-	printf("ifname: %s\n", my_ifaces[iface_index].ifname);
-	printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n",
+	// TODO: como conseguir o Link encap?
+	printf("%s Link encap: Endereço de HW %02X:%02X:%02X:%02X:%02X:%02X\n",
+	my_ifaces[iface_index].ifname,
 	my_ifaces[iface_index].mac_addr[0],
- 	my_ifaces[iface_index].mac_addr[1],
+	my_ifaces[iface_index].mac_addr[1],
 	my_ifaces[iface_index].mac_addr[2],
 	my_ifaces[iface_index].mac_addr[3],
 	my_ifaces[iface_index].mac_addr[4],
 	my_ifaces[iface_index].mac_addr[5]);
-	printf("IP: %s\n", inet_ntoa(sa.sin_addr));
-	printf("RX packets: %d\n", my_ifaces[iface_index].rx_pkts);
-	printf("RX bytes: %d\n", my_ifaces[iface_index].rx_bytes);
-	printf("TX packets: %d\n", my_ifaces[iface_index].tx_pkts);
-	printf("TX bytes: %d\n", my_ifaces[iface_index].tx_bytes);
 
+	// char* ip_address = get_ip_address(iface_index);
+	// char* netmask = get_netmask_address(iface_index);
+	// char* bcast_address = get_bcast_address(iface_index);
+	// sa_ip.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].ip_addr;
+	// sa_bcast.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].bcast_addr;
+	// sa_mask.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].netmask;
+
+	// printf("\tinet end.:%s Bcast:%s Masc: %s\n",
+	// inet_ntoa(sa_ip.sin_addr), inet_ntoa(sa_bcast.sin_addr),
+	// inet_ntoa(sa_mask.sin_addr));
+	// ip_address, ip_address, ip_address);
+
+	// free(ip_address);
+	// free(netmask);
+	// free(bcast_addr);
+
+	printf("\tUP MTU: %d\n", my_ifaces[iface_index].mtu);
+
+	printf("\tRX packets:%u TX packets:%u\n",
+	my_ifaces[iface_index].rx_pkts,
+	my_ifaces[iface_index].tx_pkts);
+
+	printf("\tRX bytes:%u TX bytes:%u\n",
+	my_ifaces[iface_index].rx_bytes,
+	my_ifaces[iface_index].tx_bytes);
 }
 /* */
 // Bind a socket to an interface
@@ -43,6 +61,7 @@ int bind_iface_name(int fd, char *iface_name)
 void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 {
 	struct ifreq s;
+	// int iface_index;
 
 	strcpy(s.ifr_name, ifname);
 	if (0 == ioctl(sockfd, SIOCGIFHWADDR, &s)) {
@@ -53,7 +72,71 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 		perror("Error getting MAC address");
 		exit(1);
 	}
+	//
+	// iface_index = get_iface_index(ifname);
+	//
+	// if(iface_index == -1){
+	// 	perror("Error getting iface info.\n");
+	// 	exit(1);
+	// }
+
 }
+
+// unsigned int get_iface_index(char* iface_name){
+// 	unsigned int i;
+// 	for(i = 0; i < MAX_IFACES; i++){
+// 		if(strcmp(my_ifaces[i].ifname, iface_name) == 0)
+// 			return i;
+// 	}
+// 	return -1;
+// }
+
+// char* get_ip_address(unsigned iface_index){
+// 	struct ifaddrs *ifaddr, *ifa;
+//   int family, s;
+//   char* address = malloc(sizeof(char) * NI_MAXHOST);
+//
+//   if (getifaddrs(&ifaddr) == -1){
+//   	perror("Error getting IP address.\n");
+//     exit(1);
+//   }
+//
+//   for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next){
+//   	if (ifa->ifa_addr == NULL)
+//     	continue;
+//
+//       s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in), address, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+//
+//       if((strcmp(ifa->ifa_name,my_ifaces[iface_index].ifname)==0)&&(ifa->ifa_addr->sa_family==AF_INET)){
+//       	if (s != 0){
+//         	printf("getnameinfo() failed: %s\n", gai_strerror(s));
+//         	exit(EXIT_FAILURE);
+//         }
+// 				freeifaddrs(ifaddr);
+//         return address;
+//       }
+//     }
+//     // freeifaddrs(ifaddr);
+// }
+
+// void get_bcast_address(unsigned int iface_index){
+// 	struct ifaddrs *ifap, *ifa;
+// 		struct sockaddr_in *sa;
+// 		// char *addr;
+//
+// 		getifaddrs (&ifap);
+// 		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+// 			if ((strcmp(my_ifaces[iface_index].ifname, ifa->ifa_name) == 0) || !(ifa->ifa_flags & (IFF_RUNNING))){
+// 				if (ifa->ifa_broadaddr->sa_family==AF_INET) {
+// 					sa = (struct sockaddr_in *) ifa->ifa_broadaddr;
+// 					my_ifaces[iface_index].bcast_addr = sa->sin_addr.s_addr;
+// 				}
+// 			}
+// 		}
+//
+// 		freeifaddrs(ifap);
+// }
+
 // Print the expected command line for the program
 void print_usage()
 {
@@ -159,12 +242,13 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 		case XIFCONFIG_INFO:{
 			unsigned int i;
 			for(i = 0; i < qt_ifaces; i++){
-				print_iface_info(i);
+				print_iface_info(sockfd, fp, i);
 			}
 			break;
 		}
 
 		case XIFCONFIG_IP:{
+			
 			break;
 		}
 
