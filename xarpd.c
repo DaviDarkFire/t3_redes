@@ -13,7 +13,7 @@ void print_eth_address(char *s, unsigned char *eth_addr){
 }
 
 void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
-	// struct sockaddr_in sa_ip, sa_bcast, sa_mask;
+	char* ip_address = get_ip_address_as_dotted_dec(my_ifaces[iface_index].ifname);
 
 	// TODO: como conseguir o Link encap?
 	printf("%s Link encap: Endereço de HW %02X:%02X:%02X:%02X:%02X:%02X\n",
@@ -25,23 +25,11 @@ void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
 	my_ifaces[iface_index].mac_addr[4],
 	my_ifaces[iface_index].mac_addr[5]);
 
-	// char* ip_address = get_ip_address(iface_index);
-	// char* netmask = get_netmask_address(iface_index);
-	// char* bcast_address = get_bcast_address(iface_index);
-	// sa_ip.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].ip_addr;
-	// sa_bcast.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].bcast_addr;
-	// sa_mask.sin_addr.s_addr = (unsigned long) my_ifaces[iface_index].netmask;
 
-	// printf("\tinet end.:%s Bcast:%s Masc: %s\n",
-	// inet_ntoa(sa_ip.sin_addr), inet_ntoa(sa_bcast.sin_addr),
-	// inet_ntoa(sa_mask.sin_addr));
-	// ip_address, ip_address, ip_address);
-
-	// free(ip_address);
-	// free(netmask);
-	// free(bcast_addr);
 
 	printf("\tUP MTU: %d\n", my_ifaces[iface_index].mtu);
+
+	printf("\tinet end.:%s Bcast: Masc:\n", ip_address);
 
 	printf("\tRX packets:%u TX packets:%u\n",
 	my_ifaces[iface_index].rx_pkts,
@@ -72,7 +60,7 @@ int bind_iface_name(int fd, char *iface_name)
 void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 {
 	struct ifreq s;
-	// int iface_index;
+	// unsigned int iface_index = get_iface_index(ifname);
 
 	strcpy(s.ifr_name, ifname);
 	if (0 == ioctl(sockfd, SIOCGIFHWADDR, &s)) {
@@ -85,14 +73,23 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 	}
 
 	update_mtu(ifname);
-	//
-	// iface_index = get_iface_index(ifname);
-	//
-	// if(iface_index == -1){
-	// 	perror("Error getting iface info.\n");
-	// 	exit(1);
-	// }
+}
 
+char* get_ip_address_as_dotted_dec(char* ifname){
+	int fd;
+ 	struct ifreq ifr;
+	char * ip_address = malloc(sizeof(char)*(15));
+ 	fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+ 	ifr.ifr_addr.sa_family = AF_INET;
+ 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+ 	ioctl(fd, SIOCGIFADDR, &ifr);
+
+ 	close(fd);
+
+	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+
+ 	return ip_address;
 }
 
 unsigned int get_iface_index(char* iface_name){
@@ -103,52 +100,6 @@ unsigned int get_iface_index(char* iface_name){
 	}
 	return -1;
 }
-
-// char* get_ip_address(unsigned iface_index){
-// 	struct ifaddrs *ifaddr, *ifa;
-//   int family, s;
-//   char* address = malloc(sizeof(char) * NI_MAXHOST);
-//
-//   if (getifaddrs(&ifaddr) == -1){
-//   	perror("Error getting IP address.\n");
-//     exit(1);
-//   }
-//
-//   for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next){
-//   	if (ifa->ifa_addr == NULL)
-//     	continue;
-//
-//       s=getnameinfo(ifa->ifa_addr,sizeof(struct sockaddr_in), address, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-//
-//       if((strcmp(ifa->ifa_name,my_ifaces[iface_index].ifname)==0)&&(ifa->ifa_addr->sa_family==AF_INET)){
-//       	if (s != 0){
-//         	printf("getnameinfo() failed: %s\n", gai_strerror(s));
-//         	exit(EXIT_FAILURE);
-//         }
-// 				freeifaddrs(ifaddr);
-//         return address;
-//       }
-//     }
-//     // freeifaddrs(ifaddr);
-// }
-
-// void get_bcast_address(unsigned int iface_index){
-// 	struct ifaddrs *ifap, *ifa;
-// 		struct sockaddr_in *sa;
-// 		// char *addr;
-//
-// 		getifaddrs (&ifap);
-// 		for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-// 			if ((strcmp(my_ifaces[iface_index].ifname, ifa->ifa_name) == 0) || !(ifa->ifa_flags & (IFF_RUNNING))){
-// 				if (ifa->ifa_broadaddr->sa_family==AF_INET) {
-// 					sa = (struct sockaddr_in *) ifa->ifa_broadaddr;
-// 					my_ifaces[iface_index].bcast_addr = sa->sin_addr.s_addr;
-// 				}
-// 			}
-// 		}
-//
-// 		freeifaddrs(ifap);
-// }
 
 // Print the expected command line for the program
 void print_usage()
@@ -205,14 +156,15 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 	FILE * fp = fdopen(sockfd, "w");
 
 	switch(opcode){
-		case XARP_SHOW:
+
+		case XARP_SHOW://DONE
 			print_list(*head, fp);
 			break;
 
 		case XARP_RES:
 			break;
 
-		case XARP_ADD:{
+		case XARP_ADD:{//DONE
 			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 			unsigned char eth_address[6];
 			memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
@@ -236,7 +188,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			break;
 		}
 
-		case XARP_DEL:{
+		case XARP_DEL:{//DONE
 			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 			if(delete_node_by_ip_address(head, ip_address) == 1)
 			  fprintf(fp, "Node deleted succesfully.\n"); // DEBUG
@@ -245,7 +197,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			break;
 		}
 
-		case XARP_TTL:{
+		case XARP_TTL:{//DONE
 			int ttl = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 			global_ttl = ttl;
 			fprintf(fp, "New default TTL is: %d\n", global_ttl);
@@ -265,7 +217,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			break;
 		}
 
-		case XIFCONFIG_MTU:{
+		case XIFCONFIG_MTU:{//DONE
 			char* ifname = request+1;
 			update_mtu(ifname);
 			break;
