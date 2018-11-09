@@ -52,6 +52,17 @@ void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
 	my_ifaces[iface_index].tx_bytes);
 }
 /* */
+void update_mtu(char* ifname){
+	int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+	struct ifreq ifr;
+	unsigned int iface_index = get_iface_index(ifname);
+
+	strcpy(ifr.ifr_name, ifname);
+	if(!ioctl(sock, SIOCGIFMTU, &ifr)) {
+  	my_ifaces[iface_index].mtu = ifr.ifr_mtu;
+	}
+}
+
 // Bind a socket to an interface
 int bind_iface_name(int fd, char *iface_name)
 {
@@ -72,6 +83,8 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 		perror("Error getting MAC address");
 		exit(1);
 	}
+
+	update_mtu(ifname);
 	//
 	// iface_index = get_iface_index(ifname);
 	//
@@ -82,14 +95,14 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 
 }
 
-// unsigned int get_iface_index(char* iface_name){
-// 	unsigned int i;
-// 	for(i = 0; i < MAX_IFACES; i++){
-// 		if(strcmp(my_ifaces[i].ifname, iface_name) == 0)
-// 			return i;
-// 	}
-// 	return -1;
-// }
+unsigned int get_iface_index(char* iface_name){
+	unsigned int i;
+	for(i = 0; i < MAX_IFACES; i++){
+		if(strcmp(my_ifaces[i].ifname, iface_name) == 0)
+			return i;
+	}
+	return -1;
+}
 
 // char* get_ip_address(unsigned iface_index){
 // 	struct ifaddrs *ifaddr, *ifa;
@@ -248,11 +261,13 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 		}
 
 		case XIFCONFIG_IP:{
-			
+
 			break;
 		}
 
 		case XIFCONFIG_MTU:{
+			char* ifname = request+1;
+			update_mtu(ifname);
 			break;
 		}
 
