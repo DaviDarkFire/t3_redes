@@ -13,8 +13,6 @@ void print_eth_address(char *s, unsigned char *eth_addr){
 }
 
 void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
-	char* ip_address = get_ip_address_as_dotted_dec(my_ifaces[iface_index].ifname);
-
 	// TODO: como conseguir o Link encap?
 	printf("%s Link encap: Endereço de HW %02X:%02X:%02X:%02X:%02X:%02X\n",
 	my_ifaces[iface_index].ifname,
@@ -25,11 +23,17 @@ void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
 	my_ifaces[iface_index].mac_addr[4],
 	my_ifaces[iface_index].mac_addr[5]);
 
-
-
 	printf("\tUP MTU: %d\n", my_ifaces[iface_index].mtu);
 
-	printf("\tinet end.:%s Bcast: Masc:\n", ip_address);
+	char* ip_address = get_ip_address_as_dotted_dec(my_ifaces[iface_index].ifname);
+	printf("\tinet end.:%s ", ip_address);
+	char* bcast_address = get_bcast_address_as_dotted_dec(my_ifaces[iface_index].ifname);
+	printf("Bcast:%s ", bcast_address);
+	char* netmask = get_netmask_as_dotted_dec(my_ifaces[iface_index].ifname);
+	printf("Masc:%s\n", netmask);
+	// free(ip_address);
+	// free(bcast_address);
+	// free(netmask);
 
 	printf("\tRX packets:%u TX packets:%u\n",
 	my_ifaces[iface_index].rx_pkts,
@@ -88,6 +92,40 @@ char* get_ip_address_as_dotted_dec(char* ifname){
  	close(fd);
 
 	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+
+ 	return ip_address;
+}
+
+char* get_bcast_address_as_dotted_dec(char* ifname){
+	int fd;
+ 	struct ifreq ifr;
+	char * ip_address = malloc(sizeof(char)*(15));
+ 	fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+ 	ifr.ifr_addr.sa_family = AF_INET;
+ 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+ 	ioctl(fd, SIOCGIFBRDADDR, &ifr);
+
+ 	close(fd);
+
+	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_broadaddr)->sin_addr);
+
+ 	return ip_address;
+}
+
+char* get_netmask_as_dotted_dec(char* ifname){
+	int fd;
+ 	struct ifreq ifr;
+	char * ip_address = malloc(sizeof(char)*(15));
+ 	fd = socket(AF_INET, SOCK_DGRAM, 0);
+
+ 	ifr.ifr_addr.sa_family = AF_INET;
+ 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+ 	ioctl(fd, SIOCGIFNETMASK, &ifr);
+
+ 	close(fd);
+
+	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr);
 
  	return ip_address;
 }
@@ -212,8 +250,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			break;
 		}
 
-		case XIFCONFIG_IP:{
-
+		case XIFCONFIG_IP:{ // Unnecessary?
 			break;
 		}
 

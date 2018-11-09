@@ -99,6 +99,8 @@ void doProcess(unsigned char* packet, int len);
 void* read_iface(void *arg);
 void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, unsigned int qt_ifaces);
 char* get_ip_address_as_dotted_dec(char* ifname);
+char* get_bcast_address_as_dotted_dec(char* ifname);
+char* get_netmask_as_dotted_dec(char* ifname);
 unsigned int get_iface_index(char* iface_name);
 void update_mtu(char* ifname);
 // void get_netmask_address(unsigned int iface_index);
