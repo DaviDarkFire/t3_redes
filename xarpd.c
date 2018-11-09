@@ -14,7 +14,7 @@ void print_eth_address(char *s, unsigned char *eth_addr){
 
 void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
 	// TODO: como conseguir o Link encap?
-	printf("%s Link encap: Endereço de HW %02X:%02X:%02X:%02X:%02X:%02X\n",
+	fprintf(fp, "%s Link encap: Endereço de HW %02X:%02X:%02X:%02X:%02X:%02X\n",
 	my_ifaces[iface_index].ifname,
 	my_ifaces[iface_index].mac_addr[0],
 	my_ifaces[iface_index].mac_addr[1],
@@ -23,23 +23,23 @@ void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
 	my_ifaces[iface_index].mac_addr[4],
 	my_ifaces[iface_index].mac_addr[5]);
 
-	printf("\tUP MTU: %d\n", my_ifaces[iface_index].mtu);
+	fprintf(fp, "\tUP MTU: %d\n", my_ifaces[iface_index].mtu);
 
 	char* ip_address = get_ip_address_as_dotted_dec(my_ifaces[iface_index].ifname);
-	printf("\tinet end.:%s ", ip_address);
+	fprintf(fp, "\tinet end.:%s ", ip_address);
 	char* bcast_address = get_bcast_address_as_dotted_dec(my_ifaces[iface_index].ifname);
-	printf("Bcast:%s ", bcast_address);
+	fprintf(fp, "Bcast:%s ", bcast_address);
 	char* netmask = get_netmask_as_dotted_dec(my_ifaces[iface_index].ifname);
-	printf("Masc:%s\n", netmask);
+	fprintf(fp, "Masc:%s\n", netmask);
 	// free(ip_address);
 	// free(bcast_address);
 	// free(netmask);
 
-	printf("\tRX packets:%u TX packets:%u\n",
+	fprintf(fp, "\tRX packets:%u TX packets:%u\n",
 	my_ifaces[iface_index].rx_pkts,
 	my_ifaces[iface_index].tx_pkts);
 
-	printf("\tRX bytes:%u TX bytes:%u\n",
+	fprintf(fp, "\tRX bytes:%u TX bytes:%u\n",
 	my_ifaces[iface_index].rx_bytes,
 	my_ifaces[iface_index].tx_bytes);
 }
