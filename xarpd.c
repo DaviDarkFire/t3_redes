@@ -31,9 +31,6 @@ void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index){
 	fprintf(fp, "Bcast:%s ", bcast_address);
 	char* netmask = get_netmask_as_dotted_dec(my_ifaces[iface_index].ifname);
 	fprintf(fp, "Masc:%s\n", netmask);
-	// free(ip_address);
-	// free(bcast_address);
-	// free(netmask);
 
 	fprintf(fp, "\tRX packets:%u TX packets:%u\n",
 	my_ifaces[iface_index].rx_pkts,
@@ -199,8 +196,26 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			print_list(*head, fp);
 			break;
 
-		case XARP_RES:
+		case XARP_RES:{
+			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
+			node_t* found_node = find_node_by_ip_address(*head, ip_address);
+
+			if(found_node != NULL){
+				fprintf(fp, "(%d.%d.%d.%d, %02x:%02x:%02x:%02x:%02x:%02x, %u)",
+				request[4], request[3], request[2], request[1],
+				found_node->eth_address[0], found_node->eth_address[1],
+				found_node->eth_address[2], found_node->eth_address[3],
+				found_node->eth_address[4], found_node->eth_address[5],
+				found_node->ttl);
+			} else {
+				// snd_arp_request(my_ifaces[0].ifname, ip_address); // OBS: é melhor mandar a string do ip já pronta?
+				// sem_timedwait(); // fazer post no do process da interface que vai receber o arp reply
+				// na do process provavelmente vai ter que fazer add node tb
+			}
+
 			break;
+		}
+
 
 		case XARP_ADD:{//DONE
 			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
