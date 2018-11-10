@@ -18,6 +18,7 @@
 	#include "linked_list.h"
 	#include "communication.h"
 	#include <linux/if.h>
+	#include "arp_protocol.h"
 	/* */
 	/* */
 	#define MAX_PACKET_SIZE 65536
@@ -74,17 +75,17 @@ struct ip_hdr {
 };
 /* */
 // Read RFC 826 to define the ARP struct
-struct arp_hdr{
-	unsigned short hw_type;
-	unsigned short proto_type;
-	unsigned char hw_addr_len;
-	unsigned char proto_addr_len;
-	unsigned short opcode;
-	unsigned char sender_hw_addr[6];
-	unsigned int sender_proto_addr;
-	unsigned char target_hw_addr[6];
-	unsigned int target_proto_addr;
-};
+// struct arp_hdr{
+// 	unsigned short hw_type;
+// 	unsigned short proto_type;
+// 	unsigned char hw_addr_len;
+// 	unsigned char proto_addr_len;
+// 	unsigned short opcode;
+// 	unsigned char sender_hw_addr[6];
+// 	unsigned int sender_proto_addr;
+// 	unsigned char target_hw_addr[6];
+// 	unsigned int target_proto_addr;
+// };
 /* */
 //
 //
@@ -102,6 +103,4 @@ char* get_bcast_address_as_dotted_dec(char* ifname);
 char* get_netmask_as_dotted_dec(char* ifname);
 unsigned int get_iface_index(char* iface_name);
 void update_mtu(char* ifname);
-// void get_netmask_address(unsigned int iface_index);
-// void get_bcast_address(unsigned int iface_index);
 #endif

@@ -208,7 +208,9 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 				found_node->eth_address[4], found_node->eth_address[5],
 				found_node->ttl);
 			} else {
-				// snd_arp_request(my_ifaces[0].ifname, ip_address); // OBS: é melhor mandar a string do ip já pronta?
+				char* dd_ip = malloc(sizeof(char)*16);
+				sprintf(dd_ip, "%d.%d.%d.%d", request[4], request[3], request[2], request[1]);
+				send_arp_request(my_ifaces[0].ifname, dd_ip);
 				// sem_timedwait(); // fazer post no do process da interface que vai receber o arp reply
 				// na do process provavelmente vai ter que fazer add node tb
 			}

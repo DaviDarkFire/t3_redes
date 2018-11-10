@@ -1,11 +1,11 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c99
+# CFLAGS = -Wall -pedantic -std=c99
 THREADFLAGS = -pthread
 COMM = communication.c
-SRCCODES = linked_list.c xarpd.c
+SRCCODES = linked_list.c arp_protocol.c xarpd.c
 
-xarpd: linked_list.c $(COMM) xarpd.c
-	$(CC) $(CFLAGS) $(THREADFLAGS) $(COMM) $(SRCCODES) -o $@
+xarpd: linked_list.c $(COMM) arp_protocol.c xarpd.c
+	$(CC)  $(THREADFLAGS) $(COMM) $(SRCCODES) -o $@
 
 clean:
 	-rm -f xarpd
