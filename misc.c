@@ -1,4 +1,4 @@
-#include "communication.h"
+#include "misc.h"
 
 
 unsigned char* get_ip_addr_bytes_from_string(char* dotted_dec_ip){

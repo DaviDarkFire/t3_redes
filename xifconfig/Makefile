@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -pedantic -g
-COMM = ../communication.c
+MSC = ../misc.c
 
-xifconfig: $(COMM) xifconfig.c
+xifconfig: $(MSC) xifconfig.c
 	$(CC) $(CFLAGS) $? -o $@
 
 clean:

@@ -19,7 +19,7 @@
 	#include <linux/if.h>
 	#include <time.h>
 	#include "linked_list.h"
-	#include "communication.h"
+	#include "misc.h"
 	#include "arp_protocol.h"
 	/* */
 	/* */

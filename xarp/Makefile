@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -pedantic -std=c99 -g
-COMM = ../communication.c
+MSC = ../misc.c
 
-xarp: $(COMM) xarp.c
+xarp: $(MSC) xarp.c
 	$(CC) $(CFLAGS) $? -o $@
 
 clean:

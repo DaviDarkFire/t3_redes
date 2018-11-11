@@ -16,7 +16,7 @@
   #include <asm/types.h>
   #include <linux/if_ether.h>
   #endif
-  #include "../communication.h"
+  #include "../misc.h"
 
   #define ifreq_offsetof(x)  offsetof(struct ifreq, x)
 
