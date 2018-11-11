@@ -102,10 +102,11 @@ void send_arp_request(char* ifname, char* requested_ip){
   // Source IPv4 address:  you need to fill this out
   char* aux_src_ip = get_ip_address_as_dotted_dec(ifname);
   strcpy (src_ip, aux_src_ip); // TODO: src_ip de acordo com a interface que eu escolhi usando a funçao que pega dotted dec
-  // free(aux_src_ip);
 
   // Destination URL or IPv4 address (must be a link-local node): you need to fill this out
   strcpy (target, requested_ip); // TODO: troca pelo ip recebido do xarp
+
+  printf("requested_ip na send_arp_request: %s\n", requested_ip); // DEBUG
 
   // Fill out hints for getaddrinfo().
   memset (&hints, 0, sizeof (struct addrinfo));
@@ -161,7 +162,6 @@ void send_arp_request(char* ifname, char* requested_ip){
   // Target protocol address (32 bits)
   // TODO: See getaddrinfo() resolution of target.
 
-  // TODO: Fill out ethernet frame header. faltou type
 
   // Ethernet frame length = ethernet header (MAC + MAC + ethernet type) + ethernet data (ARP header)
   frame_length = 6 + 6 + 2 + ARP_HDRLEN;
@@ -192,6 +192,9 @@ void send_arp_request(char* ifname, char* requested_ip){
     exit (EXIT_FAILURE);
   }
 
+  printf("frame_length: %d\n", frame_length); // DEBUG
+  // printBits(frame_length, &ether_frame); // DEBUG
+
   // Close socket descriptor.
   close (sd);
 
@@ -202,6 +205,4 @@ void send_arp_request(char* ifname, char* requested_ip){
   free (interface);
   free (target);
   free (src_ip);
-
-  // return (EXIT_SUCCESS);
 }

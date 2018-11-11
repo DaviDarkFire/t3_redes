@@ -3,6 +3,7 @@
 
 int global_ttl = 60;
 
+
 struct iface my_ifaces[MAX_IFACES];
 //
 // Print an Ethernet address
@@ -79,7 +80,7 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 char* get_ip_address_as_dotted_dec(char* ifname){
 	int fd;
  	struct ifreq ifr;
-	char * ip_address = malloc(sizeof(char)*(15));
+	char * ip_address = malloc(sizeof(char)*(16));
  	fd = socket(AF_INET, SOCK_DGRAM, 0);
 
  	ifr.ifr_addr.sa_family = AF_INET;
@@ -151,7 +152,17 @@ void doProcess(unsigned char* packet, int len) {
 	struct ether_hdr* eth = (struct ether_hdr*) packet;
 
 	if(htons(0x0806) == eth->ether_type) { // ARP
-
+		printf("I've just received an ARP packet!\n");
+		// int i;
+		// arp_hdr *arphdr = (eth + 6 + 6 + 2); // 6B for MAC dst/src, 2B for eth type
+		// printf ("Sender hardware (MAC) address: ");
+  	// for (i=0; i<5; i++) {
+    // printf ("%02x:", arphdr->sender_mac[i]);
+  	// }
+		// printf ("%02x\n", arphdr->sender_mac[5]);
+		//
+		// printf ("Sender protocol (IPv4) address: %u.%u.%u.%u\n",
+    // arphdr->sender_ip[0], arphdr->sender_ip[1], arphdr->sender_ip[2], arphdr->sender_ip[3]);
 	}
 	// Ignore if it is not an ARP packet
 }
@@ -192,7 +203,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 
 	switch(opcode){
 
-		case XARP_SHOW://DONE
+		case XARP_SHOW: //DONE
 			print_list(*head, fp);
 			break;
 
@@ -208,18 +219,19 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 				found_node->eth_address[4], found_node->eth_address[5],
 				found_node->ttl);
 			} else {
-				char* dd_ip = malloc(sizeof(char)*16);
+				unsigned char* dd_ip = malloc(sizeof(char)*16);
 				sprintf(dd_ip, "%d.%d.%d.%d", request[4], request[3], request[2], request[1]);
+				printf("request4 ... 1: %d.%d.%d.%d\n", request[4], request[3], request[2], request[1]); // DEBUG
 				send_arp_request(my_ifaces[0].ifname, dd_ip);
-				// sem_timedwait(); // fazer post no do process da interface que vai receber o arp reply
-				// na do process provavelmente vai ter que fazer add node tb
+				// sem_timedwait(); // TODO: fazer post no do process da interface que vai receber o arp reply
+				// TODO:  na do process provavelmente vai ter que fazer add node tb
 			}
 
 			break;
 		}
 
 
-		case XARP_ADD:{//DONE
+		case XARP_ADD:{ //DONE
 			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 			unsigned char eth_address[6];
 			memcpy(eth_address, request+1+4, 6); // 1B for opcode, 4B for ip address, 6B for eth_address
@@ -243,7 +255,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			break;
 		}
 
-		case XARP_DEL:{//DONE
+		case XARP_DEL:{ //DONE
 			unsigned int ip_address = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 			if(delete_node_by_ip_address(head, ip_address) == 1)
 			  fprintf(fp, "Node deleted succesfully.\n"); // DEBUG
@@ -252,14 +264,15 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			break;
 		}
 
-		case XARP_TTL:{//DONE
+		case XARP_TTL:{ //DONE
 			int ttl = (request[4] << 24) | (request[3] << 16) | (request[2] << 8) | (request[1]);
 			global_ttl = ttl;
 			fprintf(fp, "New default TTL is: %d\n", global_ttl);
 			break;
 		}
 
-		case XIFCONFIG_INFO:{
+
+		case XIFCONFIG_INFO:{ // DONE
 			unsigned int i;
 			for(i = 0; i < qt_ifaces; i++){
 				print_iface_info(sockfd, fp, i);
@@ -271,7 +284,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 			break;
 		}
 
-		case XIFCONFIG_MTU:{//DONE
+		case XIFCONFIG_MTU:{ //DONE
 			char* ifname = request+1;
 			update_mtu(ifname);
 			break;

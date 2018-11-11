@@ -39,11 +39,11 @@ void configure_ip_mode(char* iface, char* ip_addr, char* netmask){
     ioctl(sockfd, SIOCSIFFLAGS, &ifr);
 }
 
-char* build_xifconfig_info_message(){
-  char* message;
+unsigned char* build_xifconfig_info_message(){
+  unsigned char* message;
   char opcode[1];
 
-  message = malloc(sizeof(char)*1); //
+  message = malloc(sizeof(unsigned char)*1); //
 
   sprintf(opcode, "%d", XIFCONFIG_INFO);
   memcpy(message, opcode, sizeof(char)); // opcode
@@ -51,11 +51,11 @@ char* build_xifconfig_info_message(){
 }
 
 // xifconfig <interface> <IP address> <IP Netmask>
-char* build_xifconfig_ip_message(char** args){
-  char* message;
+unsigned char* build_xifconfig_ip_message(char** args){
+  unsigned char* message;
   char opcode[1];
   int ifname_len = (int) strlen(args[1]);
-  message = malloc(sizeof(char)*(1+ifname_len+4+4));
+  message = malloc(sizeof(unsigned char)*(1+ifname_len+4+4));
   sprintf(opcode, "%d", XIFCONFIG_IP);
   memcpy(message, opcode, sizeof(char)); // opcode
   memcpy(message+1, args[1], (size_t) ifname_len); // ifname
@@ -63,9 +63,9 @@ char* build_xifconfig_ip_message(char** args){
   return message;
 }
 
-char* build_xifconfig_mtu_message(char** args){
+unsigned char* build_xifconfig_mtu_message(char** args){
   int ifname_len = (int) strlen(args[1]);
-  char* message = malloc(sizeof(char)*(1+ifname_len));
+  unsigned char* message = malloc(sizeof(unsigned char)*(1+ifname_len));
   char opcode[1];
   sprintf(opcode, "%d", XIFCONFIG_MTU);
   memcpy(message, opcode, sizeof(char));
@@ -77,7 +77,7 @@ char* build_xifconfig_mtu_message(char** args){
 
 int main(int argc, char** argv){
   unsigned int mode = decide_mode(argc, argv);
-  char* message;
+  unsigned char* message;
   switch(mode){
     case DEFAULT_MODE:{
       message = build_xifconfig_info_message();
@@ -106,7 +106,7 @@ int main(int argc, char** argv){
   printf("message: %s\n", message); //DEBUG
 
   int sockfd, bytes_received, total_bytes_received;
-	char buffer[BUFFSIZE];
+	unsigned char buffer[BUFFSIZE];
 	struct sockaddr_in serv_addr;
 
   sprintf(buffer, "%s", message);

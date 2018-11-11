@@ -1,8 +1,8 @@
 #include "xarp.h"
 
 // xarp show
-char* build_xarp_show_message(){
-  char* message;
+unsigned char* build_xarp_show_message(){
+  unsigned char* message;
   char opcode[1];
   message = malloc(sizeof(char)*1);
   sprintf(opcode, "%d", XARP_SHOW);
@@ -11,26 +11,26 @@ char* build_xarp_show_message(){
 }
 
 // xarp res EndereçoIP
-char* build_xarp_res_message(char** args){
-  char* message;
-  char* ip_bytes;
+unsigned char* build_xarp_res_message(char** args){
+  unsigned char* message;
+  unsigned char* ip_bytes;
   char opcode[1];
 
-  message = malloc(sizeof(char)*5); // 1 + 4
+  message = malloc(sizeof(unsigned char)*5); // 1 + 4
 
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
 
   sprintf(opcode, "%d", XARP_RES);
-  memcpy(message, opcode, sizeof(char)); // opcode
+  memcpy(message, opcode, sizeof(unsigned char)); // opcode
   memcpy(message+1, ip_bytes, 4); // ip address
   return message;
 }
 
-char* get_mac_addr_bytes_from_string(char* colon_format_mac){
-  char* mac_bytes;
+unsigned char* get_mac_addr_bytes_from_string(char* colon_format_mac){
+  unsigned char* mac_bytes;
   int i;
   unsigned int i_aux[6];
-  mac_bytes = malloc(sizeof(char) * 6);
+  mac_bytes = malloc(sizeof(unsigned char) * 6);
   sscanf(colon_format_mac, "%X:%X:%X:%X:%X:%X",
 	&i_aux[0], &i_aux[1], &i_aux[2],
 	&i_aux[3], &i_aux[4], &i_aux[5]);
@@ -45,11 +45,11 @@ char* get_mac_addr_bytes_from_string(char* colon_format_mac){
 
 
 //xarp add EndereçoIP EndereçoEthernet ttl
-char* build_xarp_add_message(char** args){
-  char* mac_bytes;
-  char* ip_bytes;
-  char* ttl_bytes;
-  char* message;
+unsigned char* build_xarp_add_message(char** args){
+  unsigned char* mac_bytes;
+  unsigned char* ip_bytes;
+  unsigned char* ttl_bytes;
+  unsigned char* message;
   char opcode[1];
 
   message = malloc(15); // 1 + 4 + 6 + 4
@@ -72,9 +72,9 @@ char* build_xarp_add_message(char** args){
 }
 
 // xarp del endereçoIP
-char* build_xarp_del_message(char** args){
-  char* message;
-  char* ip_bytes;
+unsigned char* build_xarp_del_message(char** args){
+  unsigned char* message;
+  unsigned char* ip_bytes;
   char opcode[1];
 
   message = malloc(5); // 1 + 4
@@ -89,11 +89,11 @@ char* build_xarp_del_message(char** args){
   return message;
 }
 
-char* get_ttl_bytes_from_string(char* str_ttl){
-  char* ttl_bytes;
+unsigned char* get_ttl_bytes_from_string(char* str_ttl){
+  unsigned char* ttl_bytes;
   int i_ttl;
   i_ttl = atoi(str_ttl);
-  ttl_bytes = malloc(sizeof(char)*4);
+  ttl_bytes = malloc(sizeof(unsigned char)*4);
 
   ttl_bytes[3] = i_ttl >> 24;
   ttl_bytes[2] = i_ttl >> 16;
@@ -104,9 +104,9 @@ char* get_ttl_bytes_from_string(char* str_ttl){
 }
 
 // xarp ttl <number>
-char* build_xarp_ttl_message(char* ttl){
-  char* message = malloc(5*sizeof(char));
-  char* ttl_bytes = NULL;
+unsigned char* build_xarp_ttl_message(char* ttl){
+  unsigned char* message = malloc(5*sizeof(char));
+  unsigned char* ttl_bytes = NULL;
   char opcode[1];
 
   ttl_bytes = get_ttl_bytes_from_string(ttl);
@@ -122,7 +122,7 @@ char* build_xarp_ttl_message(char* ttl){
 
 int main(int argc, char** argv){
   char* op = argv[1];
-  char* message;
+  unsigned char* message;
 
 
   if(strcmp(op, "show") == 0){
@@ -152,7 +152,7 @@ int main(int argc, char** argv){
   printf("message: %s\n", message); //DEBUG
 
   int sockfd, bytes_received, total_bytes_received;
-	char buffer[BUFFSIZE];
+	unsigned char buffer[BUFFSIZE];
 	struct sockaddr_in serv_addr;
 
   sprintf(buffer, "%s", message);

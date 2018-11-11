@@ -15,11 +15,11 @@
   #define XIFCONFIG_INFO 5
 
 
-  char* build_xarp_show_message();
-  char* build_xarp_res_message(char** args);
-  char* build_xarp_add_message(char** args);
-  char* build_xarp_del_message(char** args);
-  char* build_xarp_ttl_message(char* ttl);
-  char* get_mac_addr_bytes_from_string(char* colon_format_mac);
-  char* get_ttl_bytes_from_string(char* str_ttl);
+  unsigned char* build_xarp_show_message();
+  unsigned char* build_xarp_res_message(char** args);
+  unsigned char* build_xarp_add_message(char** args);
+  unsigned char* build_xarp_del_message(char** args);
+  unsigned char* build_xarp_ttl_message(char* ttl);
+  unsigned char* get_mac_addr_bytes_from_string(char* colon_format_mac);
+  unsigned char* get_ttl_bytes_from_string(char* str_ttl);
 #endif

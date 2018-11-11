@@ -34,5 +34,5 @@
   unsigned int decide_mode(int argc, char** argv);
   void set_mtu_mode(char* iface, char* new_mtu);
   void configure_ip_mode(char* iface, char* ip_addr, char* netmask);
-  char* build_xifconfig_info_message();
+  unsigned char* build_xifconfig_info_message();
 #endif
