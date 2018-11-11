@@ -24,4 +24,6 @@
 	char* get_bcast_address_as_dotted_dec(char* ifname);
 	char* get_netmask_as_dotted_dec(char* ifname);
 	void printBits(size_t const size, void const * const ptr);
+	unsigned char* get_mac_addr_bytes_from_string(char* colon_format_mac);
+	unsigned char* get_ttl_bytes_from_string(char* str_ttl);
 #endif
