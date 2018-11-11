@@ -14,6 +14,8 @@
     struct node* next;
   } node_t;
 
+  extern node_t* g_head;
+
   node_t* add_node(node_t** head, unsigned int ip_address, unsigned char eth_address[6], int ttl);
   int delete_node_by_ip_address(node_t** head, unsigned int del_ip_addr);
   void print_list(node_t * head, FILE* fp);

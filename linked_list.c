@@ -1,5 +1,7 @@
 #include "linked_list.h"
 
+node_t* g_head;
+
 // adds node to the end of the list
 node_t* add_node(node_t** head, unsigned int ip_address, unsigned char eth_address[6], int ttl){
     node_t* new_node;
@@ -11,6 +13,7 @@ node_t* add_node(node_t** head, unsigned int ip_address, unsigned char eth_addre
 
     if (*head == NULL){
       *head = new_node;
+      g_head = new_node;
       return new_node;
     } // creating the head
 
@@ -34,8 +37,10 @@ int delete_node_by_ip_address(node_t** head, unsigned int del_ip_addr){
 
   // deleting head
   if(del_ip_addr == (*head)->ip_address){
+    printf("deleting head\n"); //DEBUG
     node_t* aux = *head;
     *head = (*head)->next;
+    g_head = *head;
     free(aux);
     return 1;
   }
@@ -104,35 +109,3 @@ node_t* find_node_by_ip_address(node_t* head, unsigned int desired_ip_addr){
     }
     return NULL;
 }
-
-// int main(int argc, char** argv){
-//     unsigned char c_eth_addr[6];
-
-//     get_eth_addr_as_6_bytes_from_string(c_eth_addr ,argv[1]);
-
-//     // printf("char: %02X:%02X:%02X:%02X:%02X:%02X\n",
-//     // c_eth_addr[0], c_eth_addr[1],
-//     // c_eth_addr[2], c_eth_addr[3],
-//     // c_eth_addr[4], c_eth_addr[5]); // DEBUG
-//     unsigned int sample_ip = 2982344134;
-
-//     node_t* first_node = add_node(NULL, sample_ip, c_eth_addr, 0);
-//     node_t* aux = first_node;
-//     node_t* node;
-
-//     for (int i = 1; i < 10; i++){
-//         node = add_node(first_node, sample_ip, c_eth_addr, i);
-//         first_node = node;
-//     }
-//     node_t* find_ip_5 = find_node_by_ip_address(aux, 12);
-//     if(find_ip_5 != NULL){
-//         printf("Achei o nó com ip: %d\n", find_ip_5->ip_address);
-//     } else {
-//       printf("achei nulo\n");
-//     }
-
-
-//     // delete_node_by_ip_address(&aux,0); // DEBUG
-//     // print_list(aux);
-
-// }

@@ -5,6 +5,8 @@ int global_ttl = 60;
 
 sem_t sem;
 
+// node_t* g_head;
+
 struct iface my_ifaces[MAX_IFACES];
 //
 // Print an Ethernet address
@@ -257,10 +259,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 
 			if(found_node == NULL){
 				fprintf(fp, "Node not found, adding new node\n"); // DEBUG
-				if(ttl == -1)
-					add_node(head, ip_address, eth_address, global_ttl);
-				else
-					add_node(head, ip_address, eth_address, ttl);
+				add_node(head, ip_address, eth_address, ttl);
 				// print_list(*head, fp); // DEBUG
 			} else {
 				fprintf(fp, "Node found, modifying node\n"); // DEBUG
@@ -313,6 +312,21 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 	fclose(fp);
 }
 
+void * decrease_ttl_every_sec(void* arg){
+	node_t* current = g_head;
+	while(1){
+		while(current != NULL){
+			if(current->ttl != -1)
+				current->ttl -= 1;
+			if(current->ttl == 0)
+				delete_node_by_ip_address(&g_head, current->ip_address);
+			current = current->next;
+		}
+		current = g_head;
+		sleep(1);
+	}
+}
+
 /* */
 // main function
 int main(int argc, char** argv) {
@@ -351,6 +365,11 @@ int main(int argc, char** argv) {
 	}
 
 	node_t* head = NULL;
+	g_head = head;
+
+
+	pthread_t ttl_thread;
+	pthread_create(&ttl_thread, NULL, decrease_ttl_every_sec, NULL);
 
 	int listen_sockfd;
 	int clilen;
@@ -386,7 +405,6 @@ int main(int argc, char** argv) {
 	while(1) {
 		connfd = accept(listen_sockfd, (struct sockaddr*) &cli_addr, (unsigned int*) &clilen);
 		if(connfd < 0) {
-			printf("Erro no if do accept\n"); // DEBUG
 			fprintf(stderr, "ERROR: %s\n", strerror(errno));
 			exit(1);
 		}
@@ -401,7 +419,10 @@ int main(int argc, char** argv) {
 		printf("Received message: %s\n", buffer);
 
 		daemon_handle_request(buffer, connfd, &head, argc-1);
+		g_head = head;
 	}
+
+
 
 	for(i = 0; i < argc-1; i++){
 		pthread_join(tid[i], NULL);
