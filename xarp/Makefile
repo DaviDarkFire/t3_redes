@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -pedantic -std=c99 -g
+CFLAGS = -Wall -pedantic -g
 MSC = ../misc.c
 
 xarp: $(MSC) xarp.c

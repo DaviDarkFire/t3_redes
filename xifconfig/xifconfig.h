@@ -1,5 +1,5 @@
-#ifndef __DEFINES__
-  #define __DEFINES__
+#ifndef __XIFCONFIG__
+  #define __XIFCONFIG__
   #include <stdio.h>
   #include <sys/ioctl.h>
   #include <arpa/inet.h>

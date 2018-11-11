@@ -5,8 +5,6 @@ int global_ttl = 60;
 
 sem_t sem;
 
-// node_t* g_head;
-
 struct iface my_ifaces[MAX_IFACES];
 //
 // Print an Ethernet address
@@ -80,56 +78,56 @@ void get_iface_info(int sockfd, char *ifname, struct iface *ifn)
 	update_mtu(ifname);
 }
 
-char* get_ip_address_as_dotted_dec(char* ifname){
-	int fd;
- 	struct ifreq ifr;
-	char * ip_address = malloc(sizeof(char)*(16));
- 	fd = socket(AF_INET, SOCK_DGRAM, 0);
+// char* get_ip_address_as_dotted_dec(char* ifname){
+// 	int fd;
+//  	struct ifreq ifr;
+// 	char * ip_address = malloc(sizeof(char)*(16));
+//  	fd = socket(AF_INET, SOCK_DGRAM, 0);
+//
+//  	ifr.ifr_addr.sa_family = AF_INET;
+//  	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+//  	ioctl(fd, SIOCGIFADDR, &ifr);
+//
+//  	close(fd);
+//
+// 	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
+//
+//  	return ip_address;
+// }
 
- 	ifr.ifr_addr.sa_family = AF_INET;
- 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
- 	ioctl(fd, SIOCGIFADDR, &ifr);
+// char* get_bcast_address_as_dotted_dec(char* ifname){
+// 	int fd;
+//  	struct ifreq ifr;
+// 	char * ip_address = malloc(sizeof(char)*(15));
+//  	fd = socket(AF_INET, SOCK_DGRAM, 0);
+//
+//  	ifr.ifr_addr.sa_family = AF_INET;
+//  	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+//  	ioctl(fd, SIOCGIFBRDADDR, &ifr);
+//
+//  	close(fd);
+//
+// 	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_broadaddr)->sin_addr);
+//
+//  	return ip_address;
+// }
 
- 	close(fd);
-
-	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
-
- 	return ip_address;
-}
-
-char* get_bcast_address_as_dotted_dec(char* ifname){
-	int fd;
- 	struct ifreq ifr;
-	char * ip_address = malloc(sizeof(char)*(15));
- 	fd = socket(AF_INET, SOCK_DGRAM, 0);
-
- 	ifr.ifr_addr.sa_family = AF_INET;
- 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
- 	ioctl(fd, SIOCGIFBRDADDR, &ifr);
-
- 	close(fd);
-
-	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_broadaddr)->sin_addr);
-
- 	return ip_address;
-}
-
-char* get_netmask_as_dotted_dec(char* ifname){
-	int fd;
- 	struct ifreq ifr;
-	char * ip_address = malloc(sizeof(char)*(15));
- 	fd = socket(AF_INET, SOCK_DGRAM, 0);
-
- 	ifr.ifr_addr.sa_family = AF_INET;
- 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
- 	ioctl(fd, SIOCGIFNETMASK, &ifr);
-
- 	close(fd);
-
-	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr);
-
- 	return ip_address;
-}
+// char* get_netmask_as_dotted_dec(char* ifname){
+// 	int fd;
+//  	struct ifreq ifr;
+// 	char * ip_address = malloc(sizeof(char)*(15));
+//  	fd = socket(AF_INET, SOCK_DGRAM, 0);
+//
+//  	ifr.ifr_addr.sa_family = AF_INET;
+//  	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+//  	ioctl(fd, SIOCGIFNETMASK, &ifr);
+//
+//  	close(fd);
+//
+// 	ip_address = inet_ntoa(((struct sockaddr_in *)&ifr.ifr_netmask)->sin_addr);
+//
+//  	return ip_address;
+// }
 
 unsigned int get_iface_index(char* iface_name){
 	unsigned int i;
