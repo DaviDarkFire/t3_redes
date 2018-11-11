@@ -15,9 +15,11 @@
 	#include <sys/ioctl.h>
 	#include <net/if.h>
 	#include <pthread.h>
+	#include <semaphore.h>
+	#include <linux/if.h>
+	#include <time.h>
 	#include "linked_list.h"
 	#include "communication.h"
-	#include <linux/if.h>
 	#include "arp_protocol.h"
 	/* */
 	/* */

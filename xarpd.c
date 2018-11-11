@@ -3,6 +3,7 @@
 
 int global_ttl = 60;
 
+sem_t sem;
 
 struct iface my_ifaces[MAX_IFACES];
 //
@@ -152,17 +153,20 @@ void doProcess(unsigned char* packet, int len) {
 	struct ether_hdr* eth = (struct ether_hdr*) packet;
 
 	if(htons(0x0806) == eth->ether_type) { // ARP
-		printf("I've just received an ARP packet!\n");
-		// int i;
-		// arp_hdr *arphdr = (eth + 6 + 6 + 2); // 6B for MAC dst/src, 2B for eth type
-		// printf ("Sender hardware (MAC) address: ");
-  	// for (i=0; i<5; i++) {
-    // printf ("%02x:", arphdr->sender_mac[i]);
-  	// }
-		// printf ("%02x\n", arphdr->sender_mac[5]);
-		//
-		// printf ("Sender protocol (IPv4) address: %u.%u.%u.%u\n",
-    // arphdr->sender_ip[0], arphdr->sender_ip[1], arphdr->sender_ip[2], arphdr->sender_ip[3]);
+		printf("I've just received an ARP packet!\n"); // DEBUG
+		int i;
+		arp_hdr *arphdr = (eth + 6 + 6 + 2); // 6B for MAC dst/src, 2B for eth type
+		printf ("Sender hardware (MAC) address: ");
+  	for (i=0; i<5; i++) {
+    printf ("%02x:", arphdr->sender_mac[i]);
+  	}
+		printf ("%02x\n", arphdr->sender_mac[5]);
+
+		printf ("Sender protocol (IPv4) address: %u.%u.%u.%u\n",
+    arphdr->sender_ip[0], arphdr->sender_ip[1], arphdr->sender_ip[2], arphdr->sender_ip[3]);
+		sem_post(&sem);
+	} else {
+		// printf("I've received a packet which is NOT ARP. eth_type: %X\n", ntohs(eth->ether_type)); // DEBUG
 	}
 	// Ignore if it is not an ARP packet
 }
@@ -223,6 +227,19 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 				sprintf(dd_ip, "%d.%d.%d.%d", request[4], request[3], request[2], request[1]);
 				printf("request4 ... 1: %d.%d.%d.%d\n", request[4], request[3], request[2], request[1]); // DEBUG
 				send_arp_request(my_ifaces[0].ifname, dd_ip);
+
+				struct timespec ts;
+				if (clock_gettime(CLOCK_REALTIME, &ts) == -1){
+					printf("Error at clock_gettime.\n");
+				}
+				ts.tv_sec += 3;
+				int res = sem_timedwait(&sem, &ts);
+				if (res == -1){
+					if (errno == ETIMEDOUT)
+						printf("sem_timedwait() timed out\n");
+					else
+						perror("sem_timedwait unexpected error.\n");
+				}
 				// sem_timedwait(); // TODO: fazer post no do process da interface que vai receber o arp reply
 				// TODO:  na do process provavelmente vai ter que fazer add node tb
 			}

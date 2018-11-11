@@ -19,6 +19,7 @@ unsigned char* build_xarp_res_message(char** args){
   message = malloc(sizeof(unsigned char)*5); // 1 + 4
 
   ip_bytes = get_ip_addr_bytes_from_string(args[2]);
+  printf("ip_bytes na build_xarp_res_message: %s\n", ip_bytes); // DEBUG
 
   sprintf(opcode, "%d", XARP_RES);
   memcpy(message, opcode, sizeof(unsigned char)); // opcode
