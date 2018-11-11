@@ -1,5 +1,5 @@
 #include "communication.h"
-#define BUFFSIZE 1024
+
 
 unsigned char* get_ip_addr_bytes_from_string(char* dotted_dec_ip){
   int values[4];

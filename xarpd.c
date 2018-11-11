@@ -158,14 +158,21 @@ void doProcess(unsigned char* packet, int len) {
 		printf("I've just received an ARP packet!\n"); // DEBUG
 		int i;
 		arp_hdr *arphdr = (eth + 6 + 6 + 2); // 6B for MAC dst/src, 2B for eth type
-		printf ("Sender hardware (MAC) address: ");
-  	for (i=0; i<5; i++) {
-    printf ("%02x:", arphdr->sender_mac[i]);
-  	}
-		printf ("%02x\n", arphdr->sender_mac[5]);
+		unsigned int ip_address;
+		unsigned char mac_address[6];
 
-		printf ("Sender protocol (IPv4) address: %u.%u.%u.%u\n",
-    arphdr->sender_ip[0], arphdr->sender_ip[1], arphdr->sender_ip[2], arphdr->sender_ip[3]);
+  	for (i=0; i<6; i++) {
+			mac_address[i] = (unsigned char) arphdr->sender_mac[i];
+  	}
+
+		node_t* new_node = add_node(&g_head, ip_address, mac_address, global_ttl);
+		printf("(%d.%d.%d.%d, %2x:%2x:%2x:%2x:%2x:%2x, %d)",
+		arphdr->sender_ip[0], arphdr->sender_ip[1],
+		arphdr->sender_ip[2], arphdr->sender_ip[3],
+	 	mac_address[0], mac_address[1], mac_address[2],
+		mac_address[3], mac_address[4], mac_address[5],
+		new_node->ttl);
+
 		sem_post(&sem);
 	} else {
 		// printf("I've received a packet which is NOT ARP. eth_type: %X\n", ntohs(eth->ether_type)); // DEBUG
@@ -238,7 +245,7 @@ void daemon_handle_request(unsigned char* request, int sockfd, node_t** head, un
 				int res = sem_timedwait(&sem, &ts);
 				if (res == -1){
 					if (errno == ETIMEDOUT)
-						printf("sem_timedwait() timed out\n");
+						fprintf(fp, "Endereço IP desconhecido.\n");
 					else
 						perror("sem_timedwait unexpected error.\n");
 				}

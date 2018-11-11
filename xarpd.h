@@ -33,6 +33,15 @@
 	#define BUFFSIZE 1024
 	#define LISTEN_ENQ 5
 
+	#define XARP_SHOW 0
+	#define XARP_RES 1
+	#define XARP_ADD 2
+	#define XARP_DEL 3
+	#define XARP_TTL 4
+	#define XIFCONFIG_INFO 5
+	#define XIFCONFIG_IP 6
+	#define XIFCONFIG_MTU 7
+
 /* */
 struct iface {
 	int		sockfd;
@@ -40,9 +49,6 @@ struct iface {
 	int		mtu;
 	char		ifname[MAX_IFNAME_LEN];
 	unsigned char	mac_addr[6];
-	// unsigned int	ip_addr;
-	// unsigned int netmask;
-	// unsigned int bcast_addr;
 	unsigned int	rx_pkts;
 	unsigned int	rx_bytes;
 	unsigned int	tx_pkts;
@@ -75,22 +81,6 @@ struct ip_hdr {
 	unsigned int	ip_src;		// Source IP address
 	unsigned int	ip_dst;		// Destination IP address
 };
-/* */
-// Read RFC 826 to define the ARP struct
-// struct arp_hdr{
-// 	unsigned short hw_type;
-// 	unsigned short proto_type;
-// 	unsigned char hw_addr_len;
-// 	unsigned char proto_addr_len;
-// 	unsigned short opcode;
-// 	unsigned char sender_hw_addr[6];
-// 	unsigned int sender_proto_addr;
-// 	unsigned char target_hw_addr[6];
-// 	unsigned int target_proto_addr;
-// };
-/* */
-//
-//
 
 void print_eth_address(char *s, unsigned char *eth_addr);
 void print_iface_info(int sockfd, FILE* fp, unsigned int iface_index);
